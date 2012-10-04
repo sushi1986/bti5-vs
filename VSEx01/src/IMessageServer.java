@@ -1,4 +1,3 @@
-package interfaces;
 
 import java.rmi.*;
 

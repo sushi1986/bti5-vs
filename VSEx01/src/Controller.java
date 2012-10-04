@@ -1,6 +1,4 @@
-package client.controller;
 
-import client.view.*;
 
 public class Controller {
 	
