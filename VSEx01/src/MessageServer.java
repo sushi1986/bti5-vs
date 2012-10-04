@@ -1,5 +1,6 @@
 
 
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -30,6 +31,10 @@ public class MessageServer implements IMessageServer {
 	}
 
 	public static void main(String[] args) {
+		System.setSecurityManager (new RMISecurityManager() {
+		    public void checkConnect (String host, int port) {}
+		    public void checkConnect (String host, int port, Object context) {}
+		  });
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new SecurityManager());
 		}
