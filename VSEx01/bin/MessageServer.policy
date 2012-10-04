@@ -1,0 +1,3 @@
+grant codeBase "file:/Users/phillipgesien/git/bti5-vs/VSEx01/bin/" {
+    permission java.security.AllPermission;
+};

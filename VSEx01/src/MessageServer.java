@@ -31,10 +31,10 @@ public class MessageServer implements IMessageServer {
 	}
 
 	public static void main(String[] args) {
-		System.setSecurityManager (new RMISecurityManager() {
-		    public void checkConnect (String host, int port) {}
-		    public void checkConnect (String host, int port, Object context) {}
-		  });
+//		System.setSecurityManager (new RMISecurityManager() {
+//		    public void checkConnect (String host, int port) {}
+//		    public void checkConnect (String host, int port, Object context) {}
+//		  });
 		if (System.getSecurityManager() == null) {
 			System.setSecurityManager(new SecurityManager());
 		}
