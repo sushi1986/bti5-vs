@@ -9,14 +9,15 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Date;
 
 import client.view.*;
 
 /**
- * Controller for view. 
+ * Controller for view.
  * 
  * @author phillipgesien
- *
+ * 
  */
 public class Controller {
 
@@ -27,6 +28,9 @@ public class Controller {
 	public Controller(View view) {
 		super();
 		this.view = view;
+		
+		System.setProperty("sun.rmi.transport.tcp.responseTimeout", "3000");
+		
 		InetAddress ip;
 		try {
 
@@ -45,7 +49,8 @@ public class Controller {
 						(i < mac.length - 1) ? "-" : ""));
 			}
 			System.out.println(sb.toString());
-			id = ip.getHostAddress().hashCode() + sb.toString().hashCode();
+			id = ip.getHostAddress().hashCode() + sb.toString().hashCode()
+					+ new Date().hashCode();
 
 		} catch (UnknownHostException e) {
 
@@ -61,7 +66,9 @@ public class Controller {
 
 	/**
 	 * connects to a server
-	 * @param address the server adress
+	 * 
+	 * @param address
+	 *            the server adress
 	 */
 	public void connect(String address) {
 
@@ -81,22 +88,39 @@ public class Controller {
 	}
 
 	/**
-	 * send a  message to the server
-	 * @param msg message to send
+	 * send a message to the server
+	 * 
+	 * @param msg
+	 *            message to send
 	 */
 	public void sendPressed(String msg) {
-		System.out.println("send: clientID: " + id + " msg: " + msg);
-		
-		boolean error = true;
-		//wegen Fehlersemantik:
-		do{
-		try {
-			msgServer.addMessage("" + id, msg);
-			error = false;
-		} catch (RemoteException e) {
-			System.err.println("could not send message");
+		if(msg.replace(" ", "").equals("")){
+			return;
 		}
-		}while(error);
+		// TODO timeout
+		Date date = new Date();
+System.out.println(date);
+		System.out.println("send: clientID: " + id + " msg: " + msg);
+
+		boolean error = true;
+		// wegen Fehlersemantik:
+		do {
+			try {
+				msgServer.addMessage("" + id, msg);
+				error = false;
+			} catch (RemoteException e) {
+				System.err.println("could not send message");
+			}
+
+			if (((date.getTime() + 5000)) < new Date().getTime()) { // check for
+				System.out.println(new Date());
+												// timeout
+				System.err.println("5s timeout  - could not send message");
+
+				return;
+			}
+		} while (error);
+
 	}
 
 	public void updateTextview(String msg) {
@@ -106,6 +130,7 @@ public class Controller {
 
 	/**
 	 * asks a server for a new message
+	 * 
 	 * @return false if there is no message
 	 */
 	public boolean receive() {
@@ -132,7 +157,8 @@ public class Controller {
 	public void receiveAll() {
 		// TODO Auto-generated method stub
 		System.out.println("Receive all");
-		while (receive());
+		while (receive())
+			;
 
 	}
 

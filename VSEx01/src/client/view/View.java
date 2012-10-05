@@ -14,7 +14,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import javax.swing.JScrollBar;
 
 public class View {
 
@@ -71,17 +70,16 @@ public class View {
 				}
 			}
 		});
-		txtpnRedakteurwrite.setText("redakteur_write");
-		txtpnRedakteurwrite.setBounds(1, 549, 284, 29);
+		txtpnRedakteurwrite.setBounds(6, 511, 341, 29);
 		frame.getContentPane().add(txtpnRedakteurwrite);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 65, 337, 472);
+		scrollPane.setBounds(6, 42, 341, 457);
 		frame.getContentPane().add(scrollPane);
 
 		
 		txtrLeser = new JTextArea();
-		scrollPane.setViewportView(txtrLeser);
+		scrollPane.setColumnHeaderView(txtrLeser);
 		txtrLeser.setEditable(false);
 
 		JButton btnSend = new JButton("send");
@@ -91,7 +89,7 @@ public class View {
 				txtpnRedakteurwrite.setText("");
 			}
 		});
-		btnSend.setBounds(285, 549, 67, 29);
+		btnSend.setBounds(179, 550, 173, 29);
 		frame.getContentPane().add(btnSend);
 		
 		JButton btnNewButton = new JButton("Receive");
@@ -137,5 +135,14 @@ public class View {
 		});
 		btnConnect.setBounds(366, 6, 98, 29);
 		frame.getContentPane().add(btnConnect);
+		
+		JButton btnNewButton_1 = new JButton("clear chatwindow");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				getTxtrLeser().setText("");
+			}
+		});
+		btnNewButton_1.setBounds(6, 550, 173, 29);
+		frame.getContentPane().add(btnNewButton_1);
 	}
 }
