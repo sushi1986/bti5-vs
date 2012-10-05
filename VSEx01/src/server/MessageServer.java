@@ -25,26 +25,31 @@ public class MessageServer implements IMessageServer {
 	}
 
 	@Override
-	public void addMessage(String clientID, String message)
-			throws RemoteException {
+	public void addMessage(String clientID, String message) throws RemoteException {
+		
 		messageQueue.add(clientID + ": "+message);
 	}
 
 	public static void main(String[] args) {
-		if (System.getSecurityManager() == null) {
-			System.setSecurityManager(new SecurityManager());
-		}
 		try {
-			String name = "Compute";
-			IMessageServer engine = new MessageServer();
+			String name = "Message Server";
+			IMessageServer server = new MessageServer();
 			IMessageServer stub = (IMessageServer) UnicastRemoteObject
-					.exportObject(engine, 0);
+					.exportObject(server, 0);
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(name, stub);
-			System.out.println("ComputeEngine bound");
+			System.out.println("Message Server bound");
 		} catch (Exception e) {
-			System.err.println("ComputeEngine exception:");
+			System.err.println("Message Server exception:");
 			e.printStackTrace();
+		}
+		
+		while(true){
+			try {
+				Thread.sleep(3);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

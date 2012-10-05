@@ -21,4 +21,15 @@ public class Controller {
 		// TODO get msg from server and update view; change parameter?!
 		view.getTxtrLeser().setText(view.getTxtrLeser().getText() + "\n" + msg);
 	}
+	
+	public void receive() {
+		System.out.println("Receive");
+
+	}
+	
+	public void receiveAll() {
+		// TODO Auto-generated method stub
+		System.out.println("Receive all");
+
+	}
 }

@@ -53,7 +53,7 @@ public class View {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 361, 568);
+		frame.setBounds(100, 100, 468, 568);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -88,5 +88,23 @@ public class View {
 		});
 		btnSend.setBounds(290, 490, 67, 29);
 		frame.getContentPane().add(btnSend);
+		
+		JButton btnNewButton = new JButton("Receive");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				cont.receive();
+			}
+		});
+		btnNewButton.setBounds(364, 83, 98, 138);
+		frame.getContentPane().add(btnNewButton);
+		
+		JButton btnReceiveAll = new JButton("Receive all");
+		btnReceiveAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cont.receiveAll();
+			}
+		});
+		btnReceiveAll.setBounds(364, 233, 98, 138);
+		frame.getContentPane().add(btnReceiveAll);
 	}
 }
