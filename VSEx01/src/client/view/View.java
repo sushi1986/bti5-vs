@@ -53,7 +53,7 @@ public class View {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 468, 568);
+		frame.setBounds(100, 100, 470, 606);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -70,13 +70,12 @@ public class View {
 			}
 		});
 		txtpnRedakteurwrite.setText("redakteur_write");
-		txtpnRedakteurwrite.setBounds(6, 490, 284, 29);
+		txtpnRedakteurwrite.setBounds(1, 549, 284, 29);
 		frame.getContentPane().add(txtpnRedakteurwrite);
 
 		txtrLeser = new JTextArea();
 		txtrLeser.setEditable(false);
-		txtrLeser.setText("leser");
-		txtrLeser.setBounds(6, 6, 346, 472);
+		txtrLeser.setBounds(1, 65, 346, 472);
 		frame.getContentPane().add(txtrLeser);
 
 		JButton btnSend = new JButton("send");
@@ -86,7 +85,7 @@ public class View {
 				txtpnRedakteurwrite.setText("");
 			}
 		});
-		btnSend.setBounds(290, 490, 67, 29);
+		btnSend.setBounds(285, 549, 67, 29);
 		frame.getContentPane().add(btnSend);
 		
 		JButton btnNewButton = new JButton("Receive");
@@ -106,5 +105,31 @@ public class View {
 		});
 		btnReceiveAll.setBounds(364, 233, 98, 138);
 		frame.getContentPane().add(btnReceiveAll);
+		
+		final JTextPane txtpnServerAddress = new JTextPane();
+		txtpnServerAddress.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if (arg0.getKeyChar() == '\n') {
+					String text = txtpnServerAddress.getText();
+					text=text.substring(0, text.length()-1);
+					cont.connect(text);
+					txtpnServerAddress.setText(text);
+				}
+			}
+		});
+		txtpnServerAddress.setText("Server Address");
+		txtpnServerAddress.setBounds(6, 6, 341, 29);
+		frame.getContentPane().add(txtpnServerAddress);
+		
+		JButton btnConnect = new JButton("Connect");
+		btnConnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cont.connect(txtpnServerAddress.getText());
+
+			}
+		});
+		btnConnect.setBounds(366, 6, 98, 29);
+		frame.getContentPane().add(btnConnect);
 	}
 }
