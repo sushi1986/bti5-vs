@@ -37,6 +37,7 @@ public class MessageServer implements IMessageServer {
         if(tmp==null) {
            SortedSet<Long> messageIds = new TreeSet<Long>(messageQueue.keySet());
            tmp = new ClientData(clientID, messageIds.first(), new Date().getTime() + clientTimeout);
+           clients.put(clientID, tmp);
         }
         Message returnMessage = messageQueue.get(tmp.getMessageId());
         if (returnMessage != null) {
