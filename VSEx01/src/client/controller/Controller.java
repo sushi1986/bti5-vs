@@ -86,11 +86,17 @@ public class Controller {
 	 */
 	public void sendPressed(String msg) {
 		System.out.println("send: clientID: " + id + " msg: " + msg);
+		
+		boolean error = true;
+		//wegen Fehlersemantik:
+		do{
 		try {
 			msgServer.addMessage("" + id, msg);
+			error = false;
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("could not send message");
 		}
+		}while(error);
 	}
 
 	public void updateTextview(String msg) {
@@ -114,8 +120,7 @@ public class Controller {
 						view.getTxtrLeser().getText() + "\n" + receive);
 			}
 		} catch (RemoteException e) {
-			e.printStackTrace();
-			return false;
+			return false; // becaus of maybe
 		}
 		return true;
 

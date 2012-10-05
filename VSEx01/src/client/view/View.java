@@ -4,6 +4,7 @@ import client.controller.*;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
@@ -13,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import javax.swing.JScrollBar;
 
 public class View {
 
@@ -72,11 +74,15 @@ public class View {
 		txtpnRedakteurwrite.setText("redakteur_write");
 		txtpnRedakteurwrite.setBounds(1, 549, 284, 29);
 		frame.getContentPane().add(txtpnRedakteurwrite);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 65, 337, 472);
+		frame.getContentPane().add(scrollPane);
 
+		
 		txtrLeser = new JTextArea();
+		scrollPane.setViewportView(txtrLeser);
 		txtrLeser.setEditable(false);
-		txtrLeser.setBounds(1, 65, 346, 472);
-		frame.getContentPane().add(txtrLeser);
 
 		JButton btnSend = new JButton("send");
 		btnSend.addActionListener(new ActionListener() {
