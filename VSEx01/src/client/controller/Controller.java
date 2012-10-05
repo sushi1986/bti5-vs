@@ -104,7 +104,8 @@ public class Controller {
 	 */
 	public boolean receive() {
 		try {
-			String receive = msgServer.nextMessage("" + id);
+			String clientID = "" + id;
+			String receive = msgServer.nextMessage(clientID);
 			System.out.println("Received: " + receive);
 			if (receive == null) {
 				return false;

@@ -26,6 +26,7 @@ public class MessageServer implements IMessageServer {
     public MessageServer(int maxMessages, long clientTimeout) {
         super();
         this.messageQueue = new HashMap<Long, Message>(maxMessages);
+        this.clients = new HashMap<String, ClientData>();
         this.clientTimeout = clientTimeout;
         messageIdGen = new IdGenerator();
     }
@@ -33,7 +34,7 @@ public class MessageServer implements IMessageServer {
     @Override
     public String nextMessage(String clientID) throws RemoteException {
         ClientData tmp = clients.get(clientID);
-        if(clients.containsKey(clientID)) {
+        if(tmp==null) {
            SortedSet<Long> messageIds = new TreeSet<Long>(messageQueue.keySet());
            tmp = new ClientData(clientID, messageIds.first(), new Date().getTime() + clientTimeout);
         }
