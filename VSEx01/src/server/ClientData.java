@@ -1,5 +1,7 @@
 package server;
 
+import java.util.Date;
+
 public class ClientData {
     String clientId;
     long messageId;
@@ -8,7 +10,7 @@ public class ClientData {
     public ClientData(String clientId, long messageId, long timeout) {
         this.clientId = clientId;
         this.messageId = messageId;
-        this.timeout = timeout;
+        this.timeout = new Date().getTime() + timeout;
     }
 
     public long getMessageId() {
@@ -24,7 +26,7 @@ public class ClientData {
     }
 
     public void setTimeout(long timeout) {
-        this.timeout = timeout;
+        this.timeout = new Date().getTime() + timeout;
     }
 
     public String getClientId() {
