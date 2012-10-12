@@ -1,19 +1,25 @@
 package client.view;
 
 import client.controller.*;
+
 import java.awt.EventQueue;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.JTextArea;
 import javax.swing.JButton;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.JScrollPane;
 
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+/**
+ * VS Lab 1
+ * HAW Hamburg
+ * 
+ * @author Phillip Gesin, Raphael Hiesgen
+ */
 
 public class View {
 
@@ -65,7 +71,7 @@ public class View {
 				if (e.getKeyChar() == '\n') {
 					String text = txtpnRedakteurwrite.getText();
 					text=text.substring(0, text.length()-1);
-					cont.sendPressed(text);
+					cont.send(text);
 					txtpnRedakteurwrite.setText("");
 				}
 			}
@@ -85,7 +91,7 @@ public class View {
 		JButton btnSend = new JButton("send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				cont.sendPressed(txtpnRedakteurwrite.getText());
+				cont.send(txtpnRedakteurwrite.getText());
 				txtpnRedakteurwrite.setText("");
 			}
 		});

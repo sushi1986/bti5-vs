@@ -1,23 +1,22 @@
 package server;
 
+import aufgabe1.server.MessageServer;
+
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
+
+import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
-import interfaces.IMessageServer;
+/**
+ * VS Lab 1
+ * HAW Hamburg
+ * 
+ * @author Phillip Gesin, Raphael Hiesgen
+ */
 
-public class MessageServer implements IMessageServer {
+public class MessageServerImpl implements MessageServer {
     
     Map<Long, Message> messageQueue;
     Map<String, ClientData> clients;
@@ -26,7 +25,7 @@ public class MessageServer implements IMessageServer {
     long currentMinId;
     int maxMessages;
 
-    public MessageServer(int maxMessages, long clientTimeout) {
+    public MessageServerImpl(int maxMessages, long clientTimeout) {
         super();
         this.maxMessages = maxMessages;
         this.messageQueue = new HashMap<Long, Message>(maxMessages);
