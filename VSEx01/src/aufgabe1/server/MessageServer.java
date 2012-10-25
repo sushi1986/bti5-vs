@@ -7,6 +7,8 @@ import java.rmi.*;
  * HAW Hamburg
  * 
  * @author Phillip Gesien, Raphael Hiesgen
+ * 
+ * Interface for RMI communication between server and client.
  */
 
 public interface MessageServer extends Remote {

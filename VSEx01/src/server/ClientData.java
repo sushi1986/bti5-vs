@@ -2,6 +2,15 @@ package server;
 
 import java.util.Date;
 
+/**
+ * VS Lab 1
+ * HAW Hamburg
+ * 
+ * @author Phillip Gesin, Raphael Hiesgen
+ * 
+ * Information the server stores about each client.
+ */
+
 public class ClientData {
     String clientId;
     long messageId;

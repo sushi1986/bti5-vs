@@ -14,6 +14,8 @@ import java.util.Iterator;
  * HAW Hamburg
  * 
  * @author Phillip Gesin, Raphael Hiesgen
+ * 
+ * Server implementation.
  */
 
 public class MessageServerImpl implements MessageServer {

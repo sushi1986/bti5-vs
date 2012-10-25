@@ -19,6 +19,8 @@ import javax.swing.JScrollPane;
  * HAW Hamburg
  * 
  * @author Phillip Gesin, Raphael Hiesgen
+ * 
+ * GUI for the client.
  */
 
 public class View {

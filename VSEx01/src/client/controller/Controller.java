@@ -4,13 +4,11 @@ import aufgabe1.server.MessageServer;
 
 import java.util.Date;
 
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
@@ -21,6 +19,9 @@ import client.view.*;
  * VS Lab 1 HAW Hamburg
  * 
  * @author Phillip Gesin, Raphael Hiesgen
+ * 
+ * Implements communication between GUI and server.
+ * 
  */
 
 public class Controller {
@@ -149,16 +150,6 @@ public class Controller {
                 }
             }
         } while (!done);
-
-//        if (isSent) {
-//            String sentMsg = "Sent message \"" + msg + "\".";
-//            System.out.println(sentMsg);
-//            updateTextview(sentMsg);
-//        } else {
-//            String errMsg = "Could not send message to server, connection timed out. (\"" + msg + "\")";
-//            System.err.println(errMsg);
-//            updateTextview(errMsg);
-//        }
     }
 
     public void updateTextview(String msg) {

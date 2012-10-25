@@ -4,6 +4,8 @@ import static akka.actor.Actors.poisonPill;
 import static akka.actor.Actors.remote;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
+import akka.remoteinterface.RemoteServerModule;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Worker extends UntypedActor {
@@ -14,7 +16,7 @@ public class Worker extends UntypedActor {
 		// Wichtig: Wenn die ID nicht gesetzt wird, wird immer dieselbe In- //
 		// stanz des Aktors r alle Remote-Aufrufe eines Clients verwendet!
 		int actorId = idGenerator.addAndGet(1); // get next free actor ID
-												// getContext().setId(actorId);
+		getContext().setId(String.valueOf(actorId));
 		System.out.println("Aktor wurde erstellt: " + actorId);
 	}
 
@@ -31,7 +33,8 @@ public class Worker extends UntypedActor {
 					calculateMessage.getB());
 			// Mit einer Ergebnis-Nachricht antworten
 			// replyUnsafe() wirft eine Exception bei ungltigem Absender
-			// getContext().replyUnsafe(new ResultMessage(result));
+			getContext().replyUnsafe(new ResultMessage(result));
+//			getContext().reply(new ResultMessage(result));
 			// Durch getContext().tell([Nachricht]) kann der Aktor
 			// sich selbst eine Nachricht schicken. In diesem Fall schickt
 			// sich der Aktor eine "poisonPill". Empfngt ein Aktor diese, //
@@ -51,6 +54,6 @@ public class Worker extends UntypedActor {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Worker");
-		remote().start("workerserver", 25512);
+		remote().start("localhost", 2552);
 	}
 }

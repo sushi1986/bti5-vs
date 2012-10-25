@@ -11,6 +11,8 @@ import aufgabe1.server.MessageServer;
  * HAW Hamburg
  * 
  * @author Phillip Gesin, Raphael Hiesgen
+ * 
+ * Starts the server and binds it to RMI.
  */
 
 public class Main {

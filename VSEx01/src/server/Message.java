@@ -3,6 +3,15 @@ package server;
 import java.sql.Timestamp;
 import java.util.Date;
 
+/**
+ * VS Lab 1
+ * HAW Hamburg
+ * 
+ * @author Phillip Gesin, Raphael Hiesgen
+ * 
+ * Information the server stores for each message.
+ */
+
 public class Message {
     long messageId;
     String clientId;
