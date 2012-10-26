@@ -33,8 +33,8 @@ public class Worker extends UntypedActor {
 					calculateMessage.getB());
 			// Mit einer Ergebnis-Nachricht antworten
 			// replyUnsafe() wirft eine Exception bei ungltigem Absender
-			getContext().replyUnsafe(new ResultMessage(result));
-//			getContext().reply(new ResultMessage(result));
+			//getContext().replyUnsafe(new ResultMessage(result));
+			getContext().reply(new ResultMessage(result));
 			// Durch getContext().tell([Nachricht]) kann der Aktor
 			// sich selbst eine Nachricht schicken. In diesem Fall schickt
 			// sich der Aktor eine "poisonPill". Empfngt ein Aktor diese, //
