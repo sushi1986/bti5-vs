@@ -1,3 +1,4 @@
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,14 +10,14 @@ public class Primefactorization {
 	
 	public static void main(String[] args) {
 		ArrayList<BigInteger> results = new ArrayList<BigInteger>();
-		BigInteger start =  new BigInteger("1137047281562824484226171575219374004320812483047");
+		BigInteger start =  new BigInteger("1575");
 		BigInteger N = start;
 		BigInteger a;
 //		do { 
 //			a = new BigInteger(N.bitLength(), new Random());
 //		} while( a.compareTo(new BigInteger("0")) == 0 || a.compareTo(new BigInteger("-2")) == 0);
-		a = new BigInteger("1");
-//		System.out.println("Primefactor of " + N + " with a = " + a + ":");
+		a = new BigInteger("2");
+		System.out.println("Primefactor of " + N + " with a = " + a + ":");
 		BigInteger save;
 		for(int i = 0; i < 10; i++) {
 			save = rho(N, a);
@@ -39,13 +40,14 @@ public class Primefactorization {
 				N = save;
 			}
 		}
+		System.out.println(rho(N, a));
 		System.out.println("Iterations: " + cnt);
 		for (int i = 0; i < results.size(); i++) {
 			System.out.println("[R] "+results.get(i));
 		}
 	}
 	
-	private static BigInteger rho(BigInteger N, BigInteger a) {
+	public static BigInteger rho(BigInteger N, BigInteger a) {
 		BigInteger x;
 		do {
 			x = new BigInteger(N.bitLength(), new Random());
