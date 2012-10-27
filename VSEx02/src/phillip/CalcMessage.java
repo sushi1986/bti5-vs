@@ -4,8 +4,11 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 public class CalcMessage implements Serializable {
-	private static final long serialVersionUID = 840244832287440949L;
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5473710640782279269L;
 	private BigInteger N;
 
 	public CalcMessage(BigInteger N) {

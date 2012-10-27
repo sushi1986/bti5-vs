@@ -10,7 +10,7 @@ public class Primefactorization {
 	
 	public static void main(String[] args) {
 		ArrayList<BigInteger> results = new ArrayList<BigInteger>();
-		BigInteger start =  new BigInteger("1575");
+		BigInteger start =  new BigInteger("9398726230209357241");
 		BigInteger N = start;
 		BigInteger a;
 //		do { 
