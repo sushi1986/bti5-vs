@@ -51,7 +51,7 @@ public class Master extends UntypedActor {
 		RemoteServerModule remoteSupport = remote().start("localhost", 2553);
 		ActorRef client = remote().actorFor(Master.class.getName(),
 				"localhost", 2553);
-		CalcMessage calculate = new CalcMessage(new BigInteger("9398726230209357241"));
+		CalcMessage calculate = new CalcMessage(new BigInteger("4725"));
 		client.tell(calculate);
 	}
 }

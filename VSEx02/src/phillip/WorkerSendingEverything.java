@@ -52,6 +52,7 @@ public class WorkerSendingEverything extends UntypedActor {
 			// int result =
 			// calculate(calculateMessage.getA(),calculateMessage.getB());
 			if( !( calcSet.contains(calcMessage.getN()) ) || !( primeSet.contains(calcMessage.getN()) ) ){
+				calcSet.add(calcMessage.getN());
 				BigInteger resu = rho(calcMessage.getN(), a);
 
 				System.out.println("Resu: "+resu+ " N: "+msg.getN());
@@ -69,13 +70,14 @@ public class WorkerSendingEverything extends UntypedActor {
 					} else{
 						getContext().reply(new CalcMessage(calcMessage.getN())); //TODO send to all
 					}
-					
+					return;
 				}
 				
-				
+				boolean first = false;
 				if (resu.isProbablePrime(10)) {
 					System.out.println("resu "+resu+" is a Prime");
 					primeSet.add(resu);
+					first = true;
 				} else {
 					System.out.println("sent resu: "+resu);
 					getContext().reply(new CalcMessage(resu)); //TODO send to all
@@ -86,6 +88,14 @@ public class WorkerSendingEverything extends UntypedActor {
 
 					System.out.println("other "+other+" is a Prime");
 					primeSet.add(other);
+					if(first){
+						System.out.println(primeSet);
+						System.out.println(calcSet);
+						time += new Date().getTime() - past.getTime();
+						System.out.println(time);
+						// TODO Terminiere und schicke dem Master alle daten
+						
+					}
 				} else {
 					System.out.println("sent other: "+other);
 					getContext().reply(new CalcMessage(other));//TODO send to all
