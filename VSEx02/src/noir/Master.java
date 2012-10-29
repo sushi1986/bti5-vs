@@ -5,15 +5,14 @@ import static akka.actor.Actors.remote;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import noir.messages.CalculateMessage;
 import noir.messages.FinishedMessage;
-import noir.messages.MasterMessage;
 import noir.messages.PrimeMessage;
-import noir.messages.ResultMessage;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.remoteinterface.RemoteServerModule;
@@ -28,20 +27,25 @@ public class Master extends UntypedActor {
 	
 	final int NUMBER_OF_WORKERS = 3;
 	
+	final static boolean DEBUG = false;
+	
 	List<ActorRef> workers;
 	SortedSet<BigInteger> results; 
 	int finishedWorkers;
+	long time;
 	
 	public Master() {
 		workers = new ArrayList<ActorRef>();
 		results = new TreeSet<BigInteger>();
 		finishedWorkers = 0;
+		time = 0;
 	}
 
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof CalculateMessage) {
-			System.out.println("[N] (Master) Received CalculateMessage.");
+			time = new Date().getTime();
+			if(DEBUG) System.out.println("[N] (Master) Received CalculateMessage.");
 			CalculateMessage cMessage = (CalculateMessage) message;
 			ActorRef me = getContext();
 			for(int i = 0; i < NUMBER_OF_WORKERS; ++i) {
@@ -51,22 +55,21 @@ public class Master extends UntypedActor {
 			}
 		}
 		else if (message instanceof PrimeMessage) {
-			System.out.println("[N] Master Received PrimeMessage.");
+			if(DEBUG) System.out.println("[N] Master Received PrimeMessage.");
 			PrimeMessage pMessage= (PrimeMessage) message;
 			results.add(pMessage.getPrime());
 		}
-		else if (message instanceof ResultMessage) {
-			System.out.println("[N] (Master) Received ResultMessage.");
-		}
 		else if (message instanceof FinishedMessage) {
-			System.out.println("[N] Master Received FinishMessage.");
+			if(DEBUG) System.out.println("[N] Master Received FinishMessage.");
 			FinishedMessage fMessage = (FinishedMessage) message;
+			System.out.println("[N] Time needed by some worker: " + fMessage.getTime());
 			++finishedWorkers;
 			if(finishedWorkers >= NUMBER_OF_WORKERS) {
 				System.out.println("[N] Prime factors found:");
 				for(BigInteger bi : results) {
 					System.out.println("[N] > " + bi);
 				}
+				System.out.println("[N] (Master) Calculation took: " + (new Date().getTime() - time) + ".");
 				getContext().tell(poisonPill());
 			}
 		}
@@ -79,7 +82,8 @@ public class Master extends UntypedActor {
 		System.out.println("[N] Master");
 		RemoteServerModule remoteServer = remote().start(MASTER_SERVER, MASTER_PORT);
 		ActorRef master = remote().actorFor(Master.class.getName(), MASTER_SERVER, MASTER_PORT);
-		CalculateMessage calc = new CalculateMessage("9398726230209357241");
+//		CalculateMessage calc = new CalculateMessage("1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503");
+		CalculateMessage calc = new CalculateMessage("1137047281562824484226171575219374004320812483047");
 		master.tell(calc);
 	}
 
