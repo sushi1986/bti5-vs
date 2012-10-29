@@ -9,4 +9,9 @@ public class FinishedMessage implements Serializable{
 		
 	}
 
+	@Override
+	public String toString() {
+		return "[<FinishedMessage>]";
+	}
+
 }

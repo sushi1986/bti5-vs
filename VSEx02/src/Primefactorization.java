@@ -10,18 +10,16 @@ public class Primefactorization {
 	
 	public static void main(String[] args) {
 		ArrayList<BigInteger> results = new ArrayList<BigInteger>();
-		BigInteger start =  new BigInteger("9398726230209357241");
+		BigInteger start =  new BigInteger("1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503");
 		BigInteger N = start;
 		BigInteger a;
-//		do { 
-//			a = new BigInteger(N.bitLength(), new Random());
-//		} while( a.compareTo(new BigInteger("0")) == 0 || a.compareTo(new BigInteger("-2")) == 0);
-		a = new BigInteger("2");
-		System.out.println("Primefactor of " + N + " with a = " + a + ":");
+		do {
+			a = new BigInteger(N.bitLength(), new Random());
+		} while( a.compareTo(new BigInteger("0")) == 0 || a.compareTo(new BigInteger("-2")) == 0);
+		System.out.println("Primefactor of " + N + "\n> with a = " + a + ":");
 		BigInteger save;
 		for(int i = 0; i < 10; i++) {
 			save = rho(N, a);
-//			System.out.println("Result "+i+": " + save);
 			if( save == null) {
 				results.add(N);
 				System.out.println("[!!!] rho returned: " + save);
