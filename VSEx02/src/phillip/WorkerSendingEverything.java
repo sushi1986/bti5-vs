@@ -1,9 +1,9 @@
 package phillip;
 
-
-
+import static akka.actor.Actors.poisonPill;
 import static akka.actor.Actors.remote;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Random;
@@ -11,18 +11,24 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.haw.inet.vs.lab2.ResultMessage;
+
+import akka.actor.ActorRef;
+import akka.actor.Actors;
+import akka.actor.PoisonPill;
 import akka.actor.UntypedActor;
 
 /**
  * TODO: Ich hab noch keine Ahnung wie ich terminierung feststellen soll...
+ * 
  * @author phillipgesien
- *
+ * 
  */
 public class WorkerSendingEverything extends UntypedActor {
 
 	Set<BigInteger> primeSet;
 	Set<BigInteger> calcSet;
-	
+
 	private static AtomicInteger idGenerator = new AtomicInteger();
 
 	public WorkerSendingEverything() {
@@ -40,73 +46,93 @@ public class WorkerSendingEverything extends UntypedActor {
 	private BigInteger a;
 	private long time = 0;
 
+	private void broadcastWorkers(final Serializable message) {
+		ActorRef self = getContext();
+		for (ActorRef actor : Actors.registry().actors()) {
+			if (!actor.equals(master)) {
+				actor.tell(message, self);
+			}
+		}
+	}
+
+	private ActorRef master;
+
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof phillip.CalcMessage) {
-			CalcMessage msg = (CalcMessage)message;
-			System.out.println("got messsage: N: " + msg.getN());
+			if (master == null) {
+				master = getContext().getSender().get();
+			}
+			CalcMessage msg = (CalcMessage) message;
+			System.out.println(a + "got messsage: N: " + msg.getN());
 			Date past = new Date();
-			
+
 			// Beim ersten Aufruf wird der Sender ermittel
 			CalcMessage calcMessage = (CalcMessage) message;
 			// int result =
 			// calculate(calculateMessage.getA(),calculateMessage.getB());
-			if( !( calcSet.contains(calcMessage.getN()) ) || !( primeSet.contains(calcMessage.getN()) ) ){
+			if (!(calcSet.contains(calcMessage.getN()))
+					&& !(primeSet.contains(calcMessage.getN()))) {
 				calcSet.add(calcMessage.getN());
 				BigInteger resu = rho(calcMessage.getN(), a);
 
-				System.out.println("Resu: "+resu+ " N: "+msg.getN());
-				
-				if(resu == null){
-					System.out.println("Resu: "+resu);
-					//evtl is N eine Primzahl
+				System.out.println(a + "Resu: " + resu + " N: " + msg.getN());
+
+				if (resu == null) {
+					System.out.println("Resu: " + resu);
+					// evtl is N eine Primzahl
 					if (calcMessage.getN().isProbablePrime(10)) {
-						System.out.println(primeSet);
-						System.out.println(calcSet);
+						System.out.println(a + "PrimeSet " + primeSet);
+						System.out.println(a + "CalcSet: " + calcSet);
 						time += new Date().getTime() - past.getTime();
-						System.out.println(time);
+						System.out.println(a + "Time: " + time);
 						// TODO Terminiere und schicke dem Master alle daten
-						
-					} else{
-						getContext().reply(new CalcMessage(calcMessage.getN())); //TODO send to all
+						master.tell(new ResultMessage((int) time));
+						getContext().tell(poisonPill());
+
+					} else {
+						broadcastWorkers(new CalcMessage(calcMessage.getN())); // TODO
+																				// send
+																				// to
+																				// all
 					}
 					return;
 				}
-				
+
 				boolean first = false;
 				if (resu.isProbablePrime(10)) {
-					System.out.println("resu "+resu+" is a Prime");
+					System.out.println(a + "resu " + resu + " is a Prime");
 					primeSet.add(resu);
 					first = true;
 				} else {
-					System.out.println("sent resu: "+resu);
-					getContext().reply(new CalcMessage(resu)); //TODO send to all
+					// System.out.println("sent resu: "+resu);
+					broadcastWorkers(new CalcMessage(resu)); // TODO send to all
 				}
 
 				BigInteger other = calcMessage.getN().divide(resu);
 				if (other.isProbablePrime(10)) {
 
-					System.out.println("other "+other+" is a Prime");
+					System.out.println(a + "other " + other + " is a Prime");
 					primeSet.add(other);
-					if(first){
-						System.out.println(primeSet);
-						System.out.println(calcSet);
+					if (first) {
+						System.out.println(a + "primeSet: " + primeSet);
+						System.out.println(a + "primeSet: " + calcSet);
 						time += new Date().getTime() - past.getTime();
-						System.out.println(time);
-						// TODO Terminiere und schicke dem Master alle daten
-						
+						System.out.println(a + "time: " + time);
+
+						master.tell(new ResultMessage((int) time));
+						getContext().tell(poisonPill());
+
 					}
 				} else {
-					System.out.println("sent other: "+other);
-					getContext().reply(new CalcMessage(other));//TODO send to all
+					// System.out.println("sent other: "+other);
+					broadcastWorkers(new CalcMessage(other));// TODO send to all
 				}
-				
-				
+
 			}
-			
+
 			time += new Date().getTime() - past.getTime();
-			
-		
+
 		} else {
 			throw new IllegalArgumentException("Unknown message [" + message
 					+ "]");
