@@ -1,4 +1,4 @@
-package noir;
+package rh;
 
 import static akka.actor.Actors.poisonPill;
 import static akka.actor.Actors.remote;
@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import noir.messages.CalculateMessage;
-import noir.messages.FinishedMessage;
-import noir.messages.PrimeMessage;
+import rh.messages.CalculateMessage;
+import rh.messages.FinishedMessage;
+import rh.messages.PrimeMessage;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.remoteinterface.RemoteServerModule;
@@ -25,9 +25,7 @@ public class Master extends UntypedActor {
 	final static int MASTER_PORT = 2553;
 	final static int WORKER_PORT = 2552;
 	
-	final static String PRIME = "1137047281562824484226171575219374004320812483047";
-	
-	final int NUMBER_OF_WORKERS = 2;
+	final int NUMBER_OF_WORKERS = 3;
 	
 	final static boolean DEBUG = false;
 	
@@ -84,7 +82,8 @@ public class Master extends UntypedActor {
 		System.out.println("[N] Master");
 		RemoteServerModule remoteServer = remote().start(MASTER_SERVER, MASTER_PORT);
 		ActorRef master = remote().actorFor(Master.class.getName(), MASTER_SERVER, MASTER_PORT);
-		CalculateMessage calc = new CalculateMessage(PRIME);
+//		CalculateMessage calc = new CalculateMessage("1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503");
+		CalculateMessage calc = new CalculateMessage("1137047281562824484226171575219374004320812483047");
 		master.tell(calc);
 	}
 

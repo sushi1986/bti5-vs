@@ -1,15 +1,17 @@
-package noir.messages;
+package rh.messages;
 
 import java.io.Serializable;
 
 public class FinishedMessage implements Serializable{
 	private static final long serialVersionUID = -5636711540813993175L;
 	private long time;
-	private long iterations;
 	
-	public FinishedMessage(long time, long iterations) {
+	public FinishedMessage() {
+		this.time = -1;
+	}
+	
+	public FinishedMessage(long time) {
 		this.time = time;
-		this.iterations = iterations;
 	}
 
 	@Override
@@ -19,10 +21,6 @@ public class FinishedMessage implements Serializable{
 
 	public long getTime() {
 		return time;
-	}
-
-	public long getIterations() {
-		return iterations;
 	}
 
 }

@@ -10,9 +10,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import noir.messages.CalculateMessage;
+import noir.messages.FactorMessage;
 import noir.messages.FinishedMessage;
 import noir.messages.PrimeMessage;
 import akka.actor.ActorRef;
@@ -20,8 +22,7 @@ import akka.actor.Actors;
 import akka.actor.UntypedActor;
 
 public class Worker extends UntypedActor {
-	
-	/* THIS MUST BE CHANGED IN MASTER ACCORDINGLY */
+
 	final static String MASTER_SERVER = "localhost";
 	final static String WORKER_SERVER = "localhost";
 	final static int MASTER_PORT = 2553;
@@ -37,22 +38,59 @@ public class Worker extends UntypedActor {
 	private Set<BigInteger> calculated;
 	private BigInteger N;
 	private BigInteger a;
-	private BigInteger current;
 	private ActorRef master;
 	private int actorId;
 	private long timeNeeded;
+	private long iterationsNeeded;
+//	private BigInteger condition; 
 	
 	public Worker() {
 		actorId = idGenerator.addAndGet(1);
 		getContext().setId(String.valueOf(actorId));
-		System.out.println("[N] Worker created: " + actorId);
+		System.out.println("[N] ("+actorId+") Worker created");
 		primes = new TreeSet<BigInteger>();
 		calculated = new TreeSet<BigInteger>();
 		master = null;
 		timeNeeded = 0;
+		iterationsNeeded = 0;
 	}
 	
-	public static BigInteger rho(BigInteger N, BigInteger a) {
+//	public BigInteger rho(BigInteger N, BigInteger a) throws TimeoutException {
+//		do {
+//			BigInteger x;
+//			do {
+//				x = new BigInteger(N.bitLength(), new Random());
+//			} while(x.compareTo(N) < 0);
+//			BigInteger y = x;
+//			BigInteger p = BI_ONE;
+//			int counter = 0;
+//			do {
+//				x = x.pow(2).add(a).mod(N);
+//				y = y.pow(2).add(a).mod(N);
+//				y = y.pow(2).add(a).mod(N);
+//				BigInteger d = y.subtract(x).mod(N);
+//				p = d.gcd(N);
+//				++counter;
+//				++iterationsNeeded;
+//			} while (p.compareTo(BI_ONE) == 0 && counter <= 1000000);
+//			if(counter >= 1000000) {
+//				counter = 0;
+//				do { 
+//					a = new BigInteger(N.bitLength(), new Random());
+//				} while( a.compareTo(BI_ZERO) == 0 || a.compareTo(new BigInteger("-2")) == 0);
+//				System.err.println("[N] ("+actorId+") [!!!] Restart rho with new randomness!");
+//			} else {
+//				if(p == N) {
+//					return null;
+//				}
+//				else { 
+//					return p;
+//				}
+//			}
+//		} while(true);
+//	}
+	
+	public BigInteger rho(BigInteger N, BigInteger a) throws TimeoutException {
 		BigInteger x;
 		do {
 			x = new BigInteger(N.bitLength(), new Random());
@@ -65,6 +103,7 @@ public class Worker extends UntypedActor {
 			y = y.pow(2).add(a).mod(N);
 			BigInteger d = y.subtract(x).mod(N);
 			p = d.gcd(N);
+			++iterationsNeeded;
 		} while (p.compareTo(BI_ONE) == 0);
 		if(p == N) {
 			return null;
@@ -74,41 +113,89 @@ public class Worker extends UntypedActor {
 		}
 	}
 	
-	private void work(BigInteger N) {
+//	public BigInteger rho(BigInteger N, BigInteger a) throws TimeoutException {
+//		BigInteger x;
+//		do {
+//			x = new BigInteger(N.bitLength(), new Random());
+//		} while(x.compareTo(N) < 0);
+//		BigInteger y = x;
+//		BigInteger p = BI_ONE;
+//		do {
+//			x = x.pow(2).add(a).mod(N);
+//			y = y.pow(2).add(a).mod(N);
+//			y = y.pow(2).add(a).mod(N);
+//			BigInteger d = y.subtract(x).mod(N);
+//			p = d.gcd(N);
+//			++iterationsNeeded;
+//		} while (p.compareTo(BI_ONE) == 0);
+//		if(p == N) {
+//			return null;
+//		}
+//		else { 
+//			return p;
+//		}
+//	}
+	
+	private boolean work(BigInteger N) throws TimeoutException {
 		if(DEBUG) System.out.println("[N] ("+actorId+") work with " + N);
-		BigInteger underTest = N;
-		for(int cnt = 10; cnt > 0; cnt--) {
-			BigInteger factor = rho(underTest, a);
-			if(factor == null) {
-				if(underTest.isProbablePrime(10)) {
-					PrimeMessage pMessage = new PrimeMessage(underTest);
-					broadcastWorkers(pMessage);
-					master.tell(pMessage);
-					if (!primes.contains(underTest)) {
-						System.out.println("[N] ("+actorId+") Unknown prime: " + underTest);
-						primes.add(underTest);
-						calculated.add(N);
-						while (current.mod(underTest).equals(BI_ZERO)) {
-							current = current.divide(underTest);
-						}
-						if(DEBUG) System.out.println("[N] ("+actorId+") New problem: " + current);
-						if(current.equals(BI_ONE)) {
-							broadcastWorkers(new FinishedMessage());
-						}
-					}
-					return;
-				}
-				else {
-					// calculate new a?
-					underTest = N;
+		BigInteger factor = rho(N, a);
+		if(factor == null) {
+			if(N.isProbablePrime(10)) {
+				if (!primes.contains(N)) {
+					master.tell(new PrimeMessage(N));
+					primes.add(N);
 				}
 			}
 			else {
-				underTest = factor;
+				if(DEBUG) System.out.println("[N] ("+actorId+") work brodcasting factor: " + N);
+				broadcastWorkers(new FactorMessage(N));
 			}
 		}
-		System.out.println("[N] ("+actorId+") Could not find something, perhaps someone else did.\nI AM DONE!");
+		else if(factor.isProbablePrime(10)) {
+			master.tell(new PrimeMessage(factor));
+			BigInteger rest = N.divide(factor);
+			if(rest.isProbablePrime(10)) {
+				master.tell(new PrimeMessage(rest));
+				return true;
+			}
+			calculated.add(N);
+			if(DEBUG) System.out.println("[N] ("+actorId+") work brodcasting rest: " + rest);
+			broadcastWorkers(new FactorMessage(rest));
+		}
+		else {
+			calculated.add(N);
+			BigInteger rest = N.divide(factor);
+			if(DEBUG) System.out.println("[N] ("+actorId+") work brodcasting everything: " + rest);
+			broadcastWorkers(new FactorMessage(factor));
+			broadcastWorkers(new FactorMessage(rest));
+		}
+		return false;
 	}
+	
+//	private void work(BigInteger N) throws TimeoutException {
+//		if(DEBUG) System.out.println("[N] ("+actorId+") work with " + N);
+//		BigInteger factor = rho(N, a);
+//		if(factor == null) {
+//			if(N.isProbablePrime(10)) {
+//				if (!primes.contains(N)) {
+//					master.tell(new PrimeMessage(N));
+//					broadcastWorkers(new PrimeMessage(N));
+////					primes.add(N);
+//				}
+//			}
+//			else {
+//				if(DEBUG) System.out.println("[N] ("+actorId+") work brodcasting factor: " + N);
+//				broadcastWorkers(new FactorMessage(N));
+//			}
+//		}
+//		else {
+//			calculated.add(N);
+//			BigInteger rest = N.divide(factor);
+//			if(DEBUG) System.out.println("[N] ("+actorId+") work brodcasting everything: " + rest);
+//			broadcastWorkers(new FactorMessage(factor));
+//			broadcastWorkers(new FactorMessage(rest));
+//		}
+//	}
 	
 	private void broadcastWorkers(final Serializable message) {
 		ActorRef self = getContext();
@@ -128,51 +215,56 @@ public class Worker extends UntypedActor {
 			CalculateMessage cMessage = (CalculateMessage) message;
 			finished = false;
 			N = cMessage.getN();
-			current = N;
-//			do { 
-//				a = new BigInteger(N.bitLength(), new Random());
-//			} while( a.compareTo(BI_ZERO) == 0 || a.compareTo(new BigInteger("-2")) == 0);
-			a = new BigInteger(String.valueOf(actorId));
-			work(current);
+//			condition = N;
+			do { 
+				a = new BigInteger(N.bitLength(), new Random());
+			} while( a.compareTo(BI_ZERO) == 0 || a.compareTo(new BigInteger("-2")) == 0);
+			if (work(N)) {
+				timeNeeded += (new Date().getTime() - time);
+				master.tell(new FinishedMessage(timeNeeded, iterationsNeeded));
+				getContext().tell(poisonPill());
+				finished = true;
+			}
+//			work(N);
 			timeNeeded += (new Date().getTime() - time);
 		}
-		else if (message instanceof PrimeMessage) {
-			long time = new Date().getTime();
-			if(DEBUG) System.out.println("[N] ("+actorId+") Received Prime Message: " + message.toString());
-			PrimeMessage pMessage = (PrimeMessage) message;
-			BigInteger p = pMessage.getPrime();
-			if (!primes.contains(p)) {
-				System.out.println("[N] ("+actorId+") Unknown prime: " + p);
-				this.primes.add(p);
-				while (current.mod(p).equals(BI_ZERO)) {
-					current = current.divide(p);
-				}
-				if(DEBUG) System.out.println("[N] ("+actorId+") New problem: " + current);
-				if(current.equals(BI_ONE)) {
-					broadcastWorkers(new FinishedMessage());
-				}
-				else {
-					if(!calculated.contains(current)) {
-						work(current);
-					}
-				}
-			}
-			if(!current.equals(BI_ONE)){
-				if(!calculated.contains(current)) {
-					work(current);
-				}
-			}
-			timeNeeded += (new Date().getTime() - time);
-		}
-		else if (message instanceof FinishedMessage) {
+		else if (message instanceof FactorMessage) {
+			if(DEBUG) System.out.println("[N] ("+actorId+") Received FactorMassage: " + message.toString());
 			long time = new Date().getTime();
 			if(!finished) {
-				if(DEBUG) System.out.println("[N] ("+actorId+") Received Finished Message: " + message.toString());
-				finished = true;
-				timeNeeded += (new Date().getTime() - time);
-				master.tell(new FinishedMessage(timeNeeded));
+				FactorMessage fMessage = (FactorMessage) message;
+				if(!calculated.contains(fMessage.getFactor())) {
+					if (work(fMessage.getFactor())) {
+						timeNeeded += (new Date().getTime() - time);
+						master.tell(new FinishedMessage(timeNeeded, iterationsNeeded));
+						finished = true;
+						getContext().tell(poisonPill());
+					}
+//					work(fMessage.getFactor());
+				}
 			}
-			getContext().tell(poisonPill());
+			timeNeeded += (new Date().getTime() - time);
+		}
+//		else if(message instanceof PrimeMessage) {
+//			long time = new Date().getTime();
+//			PrimeMessage pMessage = (PrimeMessage) message;
+//			BigInteger prime = pMessage.getPrime();
+//			if(!primes.contains(prime)) {
+//				primes.add(prime);
+//				while(condition.mod(prime).compareTo(BI_ZERO) == 0) {
+//					condition = condition.divide(prime);
+//				}
+//				if(condition.compareTo(BI_ONE) == 0) {
+//					timeNeeded += (new Date().getTime() - time);
+//					master.tell(new FinishedMessage(timeNeeded, iterationsNeeded));
+//					finished = true;
+//					getContext().tell(poisonPill());
+//				}
+//			}
+//			timeNeeded += (new Date().getTime() - time);
+//		}
+		else if (message instanceof FinishedMessage) {
+			if(DEBUG) System.out.println("[N] ("+actorId+") Received FinishMassage - Not yet implemented.");
 		}
 		else {
 			throw new IllegalArgumentException("[N] ("+actorId+") Unknown message [" + message + "]");

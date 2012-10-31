@@ -6,11 +6,10 @@ import java.util.Random;
 
 
 public class Primefactorization {
-	static BigInteger cnt = new BigInteger("0");
 	
 	public static void main(String[] args) {
 		ArrayList<BigInteger> results = new ArrayList<BigInteger>();
-		BigInteger start =  new BigInteger("1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503");
+		BigInteger start =  new BigInteger("1137047281562824484226171575219374004320812483047");
 		BigInteger N = start;
 		BigInteger a;
 		do {
@@ -21,8 +20,9 @@ public class Primefactorization {
 		for(int i = 0; i < 10; i++) {
 			save = rho(N, a);
 			if( save == null) {
-				results.add(N);
-				System.out.println("[!!!] rho returned: " + save);
+				if(N != null) {
+					results.add(N);
+				}
 				break;
 			}
 			if(save.isProbablePrime(10)) {
@@ -39,7 +39,6 @@ public class Primefactorization {
 			}
 		}
 		System.out.println(rho(N, a));
-		System.out.println("Iterations: " + cnt);
 		for (int i = 0; i < results.size(); i++) {
 			System.out.println("[R] "+results.get(i));
 		}
@@ -50,17 +49,16 @@ public class Primefactorization {
 		do {
 			x = new BigInteger(N.bitLength(), new Random());
 		} while( x.compareTo(N) < 0);
-//		System.out.println("[RHO] x = "+x);
 		BigInteger y = x;
 		BigInteger p = new BigInteger("1");
+		int cnt = 0;
 		do {
-			cnt = cnt.add(new BigInteger("1"));
 			x = x.pow(2).add(a).mod(N);
 			y = y.pow(2).add(a).mod(N);
 			y = y.pow(2).add(a).mod(N);
 			BigInteger d = y.subtract(x).mod(N);
-//			System.out.println("[RHO][" + cnt + "] x = " + x + ", y = " + y + ", d = " + d);
 			p = d.gcd(N);
+			++cnt;
 		} while (p.compareTo(new BigInteger("1")) == 0);
 		
 		if(p == N)
