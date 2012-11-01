@@ -25,11 +25,11 @@ public class Master extends UntypedActor {
 	final static int MASTER_PORT = 2553;
 	final static int WORKER_PORT = 2552;
 	
-	final static String PRIME = "1137047281562824484226171575219374004320812483047";
+	final static String PRIME = "1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503";
 	
-	final int NUMBER_OF_WORKERS = 2;
+	final int NUMBER_OF_WORKERS = 7;
 	
-	final static boolean DEBUG = false;
+	final static boolean DEBUG = true;
 	
 	List<ActorRef> workers;
 	SortedSet<BigInteger> results; 
@@ -47,7 +47,7 @@ public class Master extends UntypedActor {
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof CalculateMessage) {
 			time = new Date().getTime();
-			if(DEBUG) System.out.println("[N] (Master) Received CalculateMessage.");
+			if(DEBUG) System.out.println("[N] (Master) Received CalculateMessage." + message.toString());
 			CalculateMessage cMessage = (CalculateMessage) message;
 			ActorRef me = getContext();
 			for(int i = 0; i < NUMBER_OF_WORKERS; ++i) {
@@ -57,12 +57,12 @@ public class Master extends UntypedActor {
 			}
 		}
 		else if (message instanceof PrimeMessage) {
-			if(DEBUG) System.out.println("[N] Master Received PrimeMessage.");
+			if(DEBUG) System.out.println("[N] Master Received PrimeMessage." + message.toString());
 			PrimeMessage pMessage= (PrimeMessage) message;
 			results.add(pMessage.getPrime());
 		}
 		else if (message instanceof FinishedMessage) {
-			if(DEBUG) System.out.println("[N] Master Received FinishMessage.");
+			if(DEBUG) System.out.println("[N] Master Received FinishMessage." + message.toString());
 			FinishedMessage fMessage = (FinishedMessage) message;
 			System.out.println("[N] Time needed by some worker: " + fMessage.getTime());
 			++finishedWorkers;
