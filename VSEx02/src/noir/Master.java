@@ -23,8 +23,8 @@ import akka.remoteinterface.RemoteServerModule;
 public class Master extends UntypedActor {
 
 	/* THIS MUST BE CHANGED IN WORKER ACCORDINGLY */
-	final static String MASTER_SERVER = "localhost";// "141.22.90.60";
-	final static String WORKER_SERVER = "localhost";// "141.22.85.85";
+	final static String MASTER_SERVER = "localhost";
+	final static String WORKER_SERVER = "localhost";
 	final static int MASTER_PORT = 2553;
 	final static int WORKER_PORT = 2552;
 
@@ -61,12 +61,26 @@ public class Master extends UntypedActor {
 				worker.tell(cMessage, me);
 				workers.add(worker);
 				map.put(worker.getUuid(), worker);
+//				System.out.println("[N] CREATE WORKER UUID: " + worker.getUuid());
+//				System.out.println("[N] CREATE WORKER ID  : " + worker.getId());
+//				System.out.println("[N] CREATE WORKER HASH: " + worker.hashCode());
 			}
+//			for (int i = 0; i < 2; ++i) {
+//				ActorRef worker = remote().actorFor(Worker.class.getName(),
+//						"141.22.95.19", WORKER_PORT);
+//				worker.tell(cMessage, me);
+//				workers.add(worker);
+//				map.put(worker.getUuid(), worker);
+//			}
 		} else if (message instanceof BroadcastMessage) {
 			BroadcastMessage bMessage = (BroadcastMessage) message;
+			ActorRef sender = getContext().getSender().get();
+//			System.out.println("[N] RECEIVED bMESSAGE FROM UUID: " + sender.getUuid());
+//			System.out.println("[N] RECEIVED bMESSAGE FROM ID  : " + sender.getId());
+//			System.out.println("[N] RECEIVED bMESSAGE FROM HASH: " + sender.hashCode());
 			for (ActorRef worker : workers) {
-				System.out.println("[N] Master broadcasting to: "+worker);
-				worker.tell(bMessage.getMessage());
+				if(worker.compareTo(sender) != 0) worker.tell(bMessage.getMessage());
+				else System.out.println("Skipping sender ...");
 			}
 		} else if (message instanceof PrimeMessage) {
 			System.out.println("[N] Master Received PrimeMessage."

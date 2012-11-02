@@ -20,6 +20,7 @@ import noir.messages.SolvedMessage;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.japi.Procedure;
+import akka.remoteinterface.RemoteSupport;
 
 public class Worker extends UntypedActor {
 
@@ -46,7 +47,7 @@ public class Worker extends UntypedActor {
 	private BigInteger x;
 	private BigInteger y;
 	private BigInteger a;
-	
+
 	private boolean finished;
 
 	public Worker() {
@@ -59,41 +60,15 @@ public class Worker extends UntypedActor {
 		N = null;
 		x = null;
 		y = null;
-//		a = null;
+		// a = null;
 		a = new BigInteger(String.valueOf(actorId));
 
 		master = null;
 		finished = false;
-	
-	}
-	
-	private void trySuicide() {
-		System.out.println("[N] ("+actorId+") Is there any work left?");
-		become(new Procedure<Object>() {
-			@Override
-			public void apply(final Object message) {
-				if(!finished) {
-					if (message instanceof FinishedMessage) {
-						System.out.println("[N] ("+actorId+") DONE!!1!");
-						if(master != null)
-							master.tell(new FinishedMessage(actorId, 0),getContext());
-						finished = true;
-						getContext().tell(poisonPill());
-					} else {
-						unbecome();
-						try {
-							Worker.this.onReceive(message);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}, false);
-		getContext().tell(new FinishedMessage(0, 0));
+
 	}
 
-	private BigInteger rho() throws Exception{
+	private BigInteger rho() {
 		BigInteger p = null;
 		int counter = 0;
 		do {
@@ -117,7 +92,6 @@ public class Worker extends UntypedActor {
 						x = cMessage.getX();
 						y = cMessage.getY();
 						unbecome();
-						// rho(); // todo: handle rho result
 						work();
 					} else if (message instanceof SolvedMessage) {
 						System.out
@@ -147,20 +121,7 @@ public class Worker extends UntypedActor {
 		boolean hasSolved = false;
 		boolean terminate = false;
 		if (!solved.contains(N)) {
-			if(a == null) {
-				System.out.println("### BEFORE RHO ###\nN: "+N+"\nx: "+x+"\ny: "+y+"\na: "+a+"\nactorid: " + actorId);
-			}
-
-			BigInteger factor = null;
-			try {
-				factor = rho();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.out.println("### AFTER RHO ###\nN: "+N+"\nx: "+x+"\ny: "+y+"\na: "+a+"\nactorid: " + actorId);
-				System.exit(0);
-			}
-			System.out.println("[N] Rho factor is: " + factor);
+			BigInteger factor = rho();
 			if (factor == null) {
 				if (N.isProbablePrime(CERTAINTY)) {
 					master.tell(new PrimeMessage(N));
@@ -171,7 +132,9 @@ public class Worker extends UntypedActor {
 						x = new BigInteger(N.bitLength(), new Random());
 					} while (x.compareTo(N) < 0);
 					y = x;
-					master.tell(new BroadcastMessage(new FactorMessage(N)));
+					ActorRef me = getContext();
+					me.tell(new FactorMessage(N));
+					master.tell(new BroadcastMessage(new FactorMessage(N)), me);
 				}
 			} else {
 				if (factor.compareTo(BI_N_ONE) == 0) {
@@ -185,15 +148,19 @@ public class Worker extends UntypedActor {
 						factorIsPrime = true;
 						master.tell(new PrimeMessage(factor));
 					} else {
+						ActorRef me = getContext();
+						me.tell(new FactorMessage(factor));
 						master.tell(new BroadcastMessage(new FactorMessage(
-								factor)));
+								factor)), me);
 					}
 					if (rest.isProbablePrime(CERTAINTY)) {
 						restIsPrime = true;
 						master.tell(new PrimeMessage(rest));
 					} else {
+						ActorRef me = getContext();
+						me.tell(new FactorMessage(rest));
 						master.tell(new BroadcastMessage(
-								new FactorMessage(rest)));
+								new FactorMessage(rest)), me);
 					}
 					if (factorIsPrime && restIsPrime) {
 						terminate = true;
@@ -202,90 +169,82 @@ public class Worker extends UntypedActor {
 			}
 			if (hasSolved) {
 				solved.add(N);
-				master.tell(new BroadcastMessage(new SolvedMessage(N)));
+				ActorRef me = getContext();
+				master.tell(new BroadcastMessage(new SolvedMessage(N)), me);
 			}
 		} else {
-			terminate=true;
+			terminate = true;
 		}
 		if (terminate) {
-			trySuicide();
-//			System.out.println("[N] ("+actorId+") Is there any work left?");
-//			become(new Procedure<Object>() {
-//				@Override
-//				public void apply(final Object message) {
-//					if (message instanceof FinishedMessage) {
-//						System.out.println("[N] ("+actorId+") DONE!!1!");
-//						
-//						master.tell(new FinishedMessage(actorId, 0),getContext());
-//						finished = true;
-//						getContext().tell(poisonPill());
-//					} else {
-//						if(!finished) {
-//							unbecome();
-//							try {
-//								Worker.this.onReceive(message);
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//							}
-//						}
-//						else {
-//							System.out.println("[N] ("+actorId+") Skipping message");
-//						}
-//					}
-//				}
-//			}, false);
-//			getContext().tell(new FinishedMessage(0, 0));
+			if (!finished) {
+				getContext().tell(new FinishedMessage(0, 0));
+				finished = true;
+			}
 		}
 	}
 
 	@Override
 	public void onReceive(final Object message) throws Exception {
-		if(actorId > 2 ){//TODO
+		if (actorId > 2) {// TODO
 			getContext().tell(poisonPill());
 			return;
-		}
-		
-		if (message instanceof CalculateMessage) {
-			ActorRef me = getContext();
-			CalculateMessage cMessage = (CalculateMessage) message;
-			N = cMessage.getN();
-			master = getContext().getSender().get();
-//			do {
-//				a = new BigInteger(N.bitLength(),new Random());
-//			} while (a.compareTo(BI_ZERO) == 0
-//					|| a.compareTo(new BigInteger("-2")) == 0);
-			me.tell(new FactorMessage(N));
-		} else if (message instanceof FactorMessage) {
-			// boolean hasSolved = false;
-			// boolean terminate = false;
-			FactorMessage fMessage = (FactorMessage) message;
-			System.out.println("[N][OnRcv][fMsg] Message: " + fMessage);
-			N = fMessage.getFactor();
-			do {
-				x = new BigInteger(N.bitLength(), new Random());
-			} while (x.compareTo(N) < 0);
-			y = x;
-			work();
-			
-		} else if (message instanceof SolvedMessage) {
-			SolvedMessage sMessage = (SolvedMessage) message;
-			solved.add(sMessage.getFactor());
-			trySuicide();
-		} else if (message instanceof FinishedMessage) {
-			// continue
-			trySuicide();
-		} else if (message instanceof ContinueMessage) {
-			// continue
-			trySuicide();
 		} else {
-			throw new IllegalArgumentException("[N] (" + actorId
-					+ ") Unknown message [" + message + "]");
+			if (message instanceof CalculateMessage) {
+				ActorRef me = getContext();
+				CalculateMessage cMessage = (CalculateMessage) message;
+				N = cMessage.getN();
+				master = getContext().getSender().get();
+				// do {
+				// a = new BigInteger(N.bitLength(),new Random());
+				// } while (a.compareTo(BI_ZERO) == 0
+				// || a.compareTo(new BigInteger("-2")) == 0);
+				me.tell(new FactorMessage(N));
+			} else if (message instanceof FactorMessage) {
+				FactorMessage fMessage = (FactorMessage) message;
+				System.out.println("[N][OnRcv][fMsg] Message: " + fMessage);
+				N = fMessage.getFactor();
+				do {
+					x = new BigInteger(N.bitLength(), new Random());
+				} while (x.compareTo(N) < 0);
+				y = x;
+				work();
+
+			} else if (message instanceof SolvedMessage) {
+				SolvedMessage sMessage = (SolvedMessage) message;
+				solved.add(sMessage.getFactor());
+			} else if (message instanceof FinishedMessage) {
+				getContext().tell(message);
+				become(new Procedure<Object>() {
+					@Override
+					public void apply(final Object message) {
+						if (message instanceof FinishedMessage) {
+							System.out.println("[N] (" + actorId + ") DONE!!1!");
+							if (master != null)
+								master.tell(new FinishedMessage(actorId, 0),
+										getContext());
+							getContext().tell(poisonPill());
+						} else {
+							unbecome();
+							try {
+								Worker.this.onReceive(message);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}, false);
+			} else if (message instanceof ContinueMessage) {
+				// continue
+			} else {
+				throw new IllegalArgumentException("[N] (" + actorId
+						+ ") Unknown message [" + message + "]");
+			}
 		}
 	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("[N] Worker");
-		remote().start(WORKER_SERVER, WORKER_PORT);
+		RemoteSupport remoteServer = remote();
+		remoteServer.start(WORKER_SERVER, WORKER_PORT);
 	}
-
 }
