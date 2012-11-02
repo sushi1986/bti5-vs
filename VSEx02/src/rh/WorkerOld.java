@@ -19,7 +19,7 @@ import akka.actor.ActorRef;
 import akka.actor.Actors;
 import akka.actor.UntypedActor;
 
-public class Worker extends UntypedActor {
+public class WorkerOld extends UntypedActor {
 	
 	/* THIS MUST BE CHANGED IN MASTER ACCORDINGLY */
 	final static String MASTER_SERVER = "localhost";
@@ -42,7 +42,7 @@ public class Worker extends UntypedActor {
 	private int actorId;
 	private long timeNeeded;
 	
-	public Worker() {
+	public WorkerOld() {
 		actorId = idGenerator.addAndGet(1);
 		getContext().setId(String.valueOf(actorId));
 		System.out.println("[N] Worker created: " + actorId);

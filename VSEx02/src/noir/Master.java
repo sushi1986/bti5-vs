@@ -1,15 +1,13 @@
 package noir;
 
-import static akka.actor.Actors.poisonPill;
 import static akka.actor.Actors.remote;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import noir.messages.BroadcastMessage;
 import noir.messages.CalculateMessage;
 import noir.messages.FinishedMessage;
 import noir.messages.PrimeMessage;
@@ -20,24 +18,24 @@ import akka.remoteinterface.RemoteServerModule;
 public class Master extends UntypedActor {
 	
 	/* THIS MUST BE CHANGED IN WORKER ACCORDINGLY */
-	final static String MASTER_SERVER = "localhost";
-	final static String WORKER_SERVER = "localhost";
+	final static String MASTER_SERVER = "localhost";//"141.22.90.60";
+	final static String WORKER_SERVER = "localhost";//"141.22.85.85";
 	final static int MASTER_PORT = 2553;
 	final static int WORKER_PORT = 2552;
 	
-	final static String PRIME = "1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503";
+	final static String PRIME = "45";
 	
-	final int NUMBER_OF_WORKERS = 7;
+	final int NUMBER_OF_WORKERS = 2;
 	
 	final static boolean DEBUG = true;
 	
-	List<ActorRef> workers;
+	Set<ActorRef> workers;
 	SortedSet<BigInteger> results; 
 	int finishedWorkers;
 	long time;
 	
 	public Master() {
-		workers = new ArrayList<ActorRef>();
+		workers = new TreeSet<ActorRef>();
 		results = new TreeSet<BigInteger>();
 		finishedWorkers = 0;
 		time = 0;
@@ -46,14 +44,19 @@ public class Master extends UntypedActor {
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof CalculateMessage) {
-			time = new Date().getTime();
 			if(DEBUG) System.out.println("[N] (Master) Received CalculateMessage." + message.toString());
-			CalculateMessage cMessage = (CalculateMessage) message;
 			ActorRef me = getContext();
+			CalculateMessage cMessage = (CalculateMessage) message;
 			for(int i = 0; i < NUMBER_OF_WORKERS; ++i) {
-				ActorRef worker = remote().actorFor(Worker.class.getName(), WORKER_SERVER, WORKER_PORT);
+				ActorRef worker = remote().actorFor(Worker.class.getName(), "localhost", WORKER_PORT);
 				worker.tell(cMessage, me);
 				workers.add(worker);
+			}
+		}
+		else if (message instanceof BroadcastMessage) {
+			BroadcastMessage bMessage = (BroadcastMessage) message;
+			for(ActorRef worker : workers) {
+				worker.tell(bMessage.getMessage());
 			}
 		}
 		else if (message instanceof PrimeMessage) {
@@ -64,16 +67,6 @@ public class Master extends UntypedActor {
 		else if (message instanceof FinishedMessage) {
 			if(DEBUG) System.out.println("[N] Master Received FinishMessage." + message.toString());
 			FinishedMessage fMessage = (FinishedMessage) message;
-			System.out.println("[N] Time needed by some worker: " + fMessage.getTime());
-			++finishedWorkers;
-			if(finishedWorkers >= NUMBER_OF_WORKERS) {
-				System.out.println("[N] Prime factors found:");
-				for(BigInteger bi : results) {
-					System.out.println("[N] > " + bi);
-				}
-				System.out.println("[N] (Master) Calculation took: " + (new Date().getTime() - time) + ".");
-				getContext().tell(poisonPill());
-			}
 		}
 		else {
 			throw new IllegalArgumentException("[N] (Master) Unknown message [" + message + "]");

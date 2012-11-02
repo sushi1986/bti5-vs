@@ -3,11 +3,11 @@ package noir.messages;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-public class AlreadyCalculatedMessage implements Serializable{
+public class SolvedMessage implements Serializable{
 	private static final long serialVersionUID = -1274255035154538402L;
 	private BigInteger factor;
 	
-	public AlreadyCalculatedMessage(final BigInteger factor) {
+	public SolvedMessage(final BigInteger factor) {
 		this.factor = factor;
 	}
 
@@ -17,6 +17,6 @@ public class AlreadyCalculatedMessage implements Serializable{
 
 	@Override
 	public String toString() {
-		return "[AlreadyCalculatedMessage factor=" + factor + "]";
+		return "[SolvedMessage factor=" + factor + "]";
 	}
 }
