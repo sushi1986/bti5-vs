@@ -1,17 +1,16 @@
 package noir;
 
+import static akka.actor.Actors.poisonPill;
 import static akka.actor.Actors.remote;
 
 import java.math.BigInteger;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.eaio.uuid.UUID;
-
-import noir.messages.BroadcastMessage;
 import noir.messages.CalculateMessage;
 import noir.messages.FinishedMessage;
 import noir.messages.PrimeMessage;
@@ -28,80 +27,96 @@ public class Master extends UntypedActor {
 	final static int MASTER_PORT = 2553;
 	final static int WORKER_PORT = 2552;
 
-	final static String PRIME = "1137047281562824484226171575219374004320812483047";
+	static String PRIME = "1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503"; //"1137047281562824484226171575219374004320812483047";
+	static boolean HAS_GUI = false;
 
-	final int NUMBER_OF_WORKERS = 2;
+	final int NUMBER_OF_LOCAL_WORKERS = 8;
 
 	final static boolean DEBUG = true;
 
-	Map<UUID, ActorRef> map;
-	Set<ActorRef> workers;
+	Map<Long, WorkerData> workerData;
 	SortedSet<BigInteger> results;
-	int finishedWorkers;
+	int unfinishedWorkers;
+	
 	long time;
+	long timeNeeded;
 
 	public Master() {
-		map = new TreeMap<UUID, ActorRef>();
-		workers = new TreeSet<ActorRef>();
+		workerData = new TreeMap<Long, WorkerData>();
 		results = new TreeSet<BigInteger>();
-		finishedWorkers = 0;
+		unfinishedWorkers = NUMBER_OF_LOCAL_WORKERS;
 		time = 0;
+		timeNeeded = 0;
 	}
 
 	@Override
 	public void onReceive(Object message) throws Exception {
+//		time = new Date().getTime();
 		if (message instanceof CalculateMessage) {
+			time = new Date().getTime();
 			System.out.println("[N] (Master) Received CalculateMessage."
 					+ message.toString());
 			ActorRef me = getContext();
+			Actors.registry().register(me);
 			CalculateMessage cMessage = (CalculateMessage) message;
-			for (int i = 0; i < NUMBER_OF_WORKERS; ++i) {
+			for (int i = 0; i < NUMBER_OF_LOCAL_WORKERS; ++i) {
 				ActorRef worker = remote().actorFor(Worker.class.getName(),
 						"localhost", WORKER_PORT);
 				worker.tell(cMessage, me);
-				workers.add(worker);
-				map.put(worker.getUuid(), worker);
-//				System.out.println("[N] CREATE WORKER UUID: " + worker.getUuid());
-//				System.out.println("[N] CREATE WORKER ID  : " + worker.getId());
-//				System.out.println("[N] CREATE WORKER HASH: " + worker.hashCode());
 			}
-//			for (int i = 0; i < 2; ++i) {
-//				ActorRef worker = remote().actorFor(Worker.class.getName(),
-//						"141.22.95.19", WORKER_PORT);
-//				worker.tell(cMessage, me);
-//				workers.add(worker);
-//				map.put(worker.getUuid(), worker);
-//			}
-		} else if (message instanceof BroadcastMessage) {
-			BroadcastMessage bMessage = (BroadcastMessage) message;
-			ActorRef sender = getContext().getSender().get();
-//			System.out.println("[N] RECEIVED bMESSAGE FROM UUID: " + sender.getUuid());
-//			System.out.println("[N] RECEIVED bMESSAGE FROM ID  : " + sender.getId());
-//			System.out.println("[N] RECEIVED bMESSAGE FROM HASH: " + sender.hashCode());
-			for (ActorRef worker : workers) {
-				if(worker.compareTo(sender) != 0) worker.tell(bMessage.getMessage());
-				else System.out.println("Skipping sender ...");
-			}
+			workerData = new TreeMap<Long, WorkerData>();
+			results = new TreeSet<BigInteger>();
+			unfinishedWorkers = NUMBER_OF_LOCAL_WORKERS;
+			timeNeeded = 0;
 		} else if (message instanceof PrimeMessage) {
 			System.out.println("[N] Master Received PrimeMessage."
 					+ message.toString());
 			PrimeMessage pMessage = (PrimeMessage) message;
 			results.add(pMessage.getPrime());
+
+			if(HAS_GUI) {
+				GUI.getTextArea().setText("");
+				for (BigInteger s : results) {
+					GUI.getTextArea().getText().concat("\n"+s);
+				}
+			}
 		} else if (message instanceof FinishedMessage) {
 			System.out.println("[N] Master Received FinishMessage."
 					+ message.toString());
 			FinishedMessage fMessage = (FinishedMessage) message;
-			System.out.println("[N] Master removeing worker with id: " + fMessage.getTime());
-			ActorRef sender = getContext().getSender().get();
-			if(map.containsKey(sender.getUuid()))
-				workers.remove(map.get(sender.getUuid()));
+			workerData.put(fMessage.getId(), new WorkerData(fMessage.getTime(), fMessage.getIterations()));
+//			System.out.println("[N] Worker finished in " + fMessage.getTime() + " with " + fMessage.getIterations() + " iterations");
+			unfinishedWorkers--;
+			if(unfinishedWorkers == 0) {
+				System.out.println("[N] ########## RESULTS ##########");
+				timeNeeded += new Date().getTime() - time;
+				System.out.println("[N] " + results.size() + " primefactors for " + PRIME + " found:");
+				for (Iterator<BigInteger> itr = results.iterator(); itr.hasNext();) {
+					BigInteger prime = (BigInteger) itr.next();
+					System.out.println("[N] > " + prime);
+				}
+				System.out.println("[N] Master took " + timeNeeded + " msec");
+				for (long i = 0; i <= workerData.size(); i++) {
+					if(workerData.containsKey(i)) {
+						WorkerData tmp = workerData.get(i);
+						System.out.println("[N] Worker " + i + " took " + tmp.getTime() + " msec and " + tmp.getIterations() + " iterations");
+					}
+				}
+				getContext().tell(poisonPill());
+				System.out.println("[N] ############ END ############");
+			}
 		} else {
 			throw new IllegalArgumentException("[N] (Master) Unknown message ["
 					+ message + "]");
 		}
+//		timeNeeded += new Date().getTime() - time;
 	}
 
 	public static void main(String[] args) {
+		if(args.length > 0){
+			PRIME = args[0];
+			HAS_GUI = true;
+		}
 		System.out.println("[N] Master");
 		RemoteServerModule remoteServer = remote().start(MASTER_SERVER,
 				MASTER_PORT);

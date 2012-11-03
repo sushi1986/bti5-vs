@@ -1,28 +1,32 @@
 package noir;
 
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JButton;
 import java.awt.BorderLayout;
-import javax.swing.JTextField;
-import javax.swing.JTextArea;
-import java.awt.event.ActionListener;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.math.BigInteger;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class GUI {
 
 	private JFrame frame;
-	private JTextField textField;
-	private JTextArea textArea;
+	private  JTextField textField;
+	private static JTextArea textArea;
 
+	
+	public static JTextArea getTextArea() {
+		return textArea;
+	}
+	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -54,8 +58,9 @@ public class GUI {
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				BigInteger bi = new BigInteger(textField.getText());
-				
+				String[] a = {textField.getText()};
+
+				Master.main(a);
 				//TODO: HIER master.tell(new CalculateMsg) oder so...
 				
 			}

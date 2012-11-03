@@ -2,9 +2,6 @@ package noir.messages;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.Set;
-
-import akka.actor.ActorRef;
 
 public class CalculateMessage implements Serializable{
 	private static final long serialVersionUID = -121976766272391832L;
@@ -26,6 +23,4 @@ public class CalculateMessage implements Serializable{
 	public String toString() {
 		return "[CalculateMessage N=" + N + "]";
 	}
-
-
 }
