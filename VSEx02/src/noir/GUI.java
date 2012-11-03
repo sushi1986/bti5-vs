@@ -15,10 +15,10 @@ public class GUI {
 
 	private JFrame frame;
 	private  JTextField textField;
-	private static JTextArea textArea;
-
+	private  JTextArea textArea;
+	static GUI  gui = null; 
 	
-	public static JTextArea getTextArea() {
+	public  JTextArea getTextArea() {
 		return textArea;
 	}
 	
@@ -50,6 +50,7 @@ public class GUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		GUI.gui = this;
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 422);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -59,7 +60,7 @@ public class GUI {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				String[] a = {textField.getText()};
-
+				
 				Master.main(a);
 				//TODO: HIER master.tell(new CalculateMsg) oder so...
 				
@@ -71,11 +72,18 @@ public class GUI {
 		frame.getContentPane().add(textField, BorderLayout.SOUTH);
 		textField.setColumns(10);
 		
+		
+		
+		
+		
 		JScrollPane scrollPane = new JScrollPane();
 		frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
 		
 		textArea = new JTextArea();
-		scrollPane.setViewportView(textArea);
+		scrollPane.setColumnHeaderView(textArea);
+		textArea.setEditable(false);
+
+//		scrollPane.setViewportView(textArea);
 	}
 
 }
