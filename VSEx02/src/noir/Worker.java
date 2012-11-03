@@ -114,10 +114,11 @@ public class Worker extends UntypedActor {
 							work();
 						}
 					} else if (message instanceof SolvedMessage) {
-//						System.out.println("[N] (" + actorId + ") -> become ... received solved message");
+//						System.out.println("[N] (" + actorId + ") (rho) Received SolvedMessage");
 						SolvedMessage sMessage = (SolvedMessage) message;
 						solved.add(sMessage.getFactor());
 						if (N.compareTo(sMessage.getFactor()) == 0) {
+							System.out.println("[N] (" + actorId + ") (rho) Someone solved my problem!");
 							unbecome();
 						}
 					} else {
