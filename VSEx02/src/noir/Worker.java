@@ -40,6 +40,7 @@ public class Worker extends UntypedActor {
 	final static boolean DEBUG = false;
 
 	private static AtomicInteger idGenerator = new AtomicInteger();
+	private static AtomicInteger contIdGen = new AtomicInteger();
 	private ActorRef master;
 	private int actorId;
 
@@ -56,6 +57,8 @@ public class Worker extends UntypedActor {
 	private long timeNeeded;
 	
 	private long iterationsNeeded;
+	
+	private int nextContId;
 
 	public Worker() {
 		actorId = idGenerator.addAndGet(1);
@@ -77,6 +80,8 @@ public class Worker extends UntypedActor {
 		time = 0;
 		timeNeeded = 0;
 		iterationsNeeded = 0;
+		
+		nextContId = 0;
 	}
 
 	private BigInteger rho() {
@@ -92,7 +97,8 @@ public class Worker extends UntypedActor {
 			++iterationsNeeded;
 		} while (p.compareTo(BI_ONE) == 0 && counter < CHECK_COUNTER);
 		if (counter >= CHECK_COUNTER) {
-			getContext().tell(new ContinueMessage(x, y, N));
+			nextContId = contIdGen.incrementAndGet();
+			getContext().tell(new ContinueMessage(nextContId, x, y, N));
 			become(new Procedure<Object>() {
 				@Override
 				public void apply(final Object message) {
@@ -100,11 +106,13 @@ public class Worker extends UntypedActor {
 					if (message instanceof ContinueMessage) {
 //						System.out.println("[N] (" + actorId + ") -> become ... received continue message");
 						ContinueMessage cMessage = (ContinueMessage) message;
-						N = cMessage.getN();
-						x = cMessage.getX();
-						y = cMessage.getY();
-						unbecome();
-						work();
+						if(cMessage.getId() == nextContId) {
+							N = cMessage.getN();
+							x = cMessage.getX();
+							y = cMessage.getY();
+							unbecome();
+							work();
+						}
 					} else if (message instanceof SolvedMessage) {
 //						System.out.println("[N] (" + actorId + ") -> become ... received solved message");
 						SolvedMessage sMessage = (SolvedMessage) message;
