@@ -10,17 +10,30 @@ public class ObjectBroker {
 	private static Lock mutex = new ReentrantLock();
 	private String host;
 	private int port;
+	private Thread thread;
 	
 	public ObjectBroker(String host, int port) {
 		super();
 		this.host = host;
 		this.port = port;
-		
 	}
 
 	// Liefert den Namensdienst (Stellvetreterobjekt).
 	public NameService getNameService() {
-		return new NameServiceImpl(2552, host, port);
+		NameServiceImpl tmp = new NameServiceImpl(2552, host, port);
+		Thread thread = new Thread(tmp);
+		this.thread = thread;
+		thread.start();
+		return tmp;
+	}
+	
+	public void join() {
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	// Das hier zurückgelieferte Objekt soll der zentrale Einstiegspunkt

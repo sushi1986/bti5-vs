@@ -112,6 +112,7 @@ public class NameServiceImpl extends NameService implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("NameService is now running on port: " + srvSck.getLocalPort());
 		while (running) {
 			try {
 				Socket sck = srvSck.accept();
