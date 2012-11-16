@@ -27,7 +27,7 @@ public class Master extends UntypedActor {
 	final static int MASTER_PORT = 2553;
 	final static int WORKER_PORT = 2552;
 
-	static String PRIME = "1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503"; // "1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503";
+	static String PRIME = "1137047281562824484226171575219374004320812483047"; // "1000602106143806596478722974273666950903906112131794745457338659266842446985022076792112309173975243506969710503";
 																																				// //"1137047281562824484226171575219374004320812483047";
 	static boolean HAS_GUI = false;
 
@@ -141,8 +141,10 @@ public class Master extends UntypedActor {
 	}
 
 	private void addTextToView(String s) {
-		GUI.gui.getTextArea().setText(
-				GUI.gui.getTextArea().getText() + "\n" + s);
+		if(HAS_GUI) {
+			GUI.gui.getTextArea().setText(
+					GUI.gui.getTextArea().getText() + "\n" + s);
+		}
 	}
 
 	public static void main(String[] args) {

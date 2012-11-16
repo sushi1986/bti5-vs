@@ -20,7 +20,7 @@ public class ObjectBroker {
 
 	// Liefert den Namensdienst (Stellvetreterobjekt).
 	public NameService getNameService() {
-		return null;
+		return new NameServiceImpl(2552, host, port);
 	}
 	
 	// Das hier zurückgelieferte Objekt soll der zentrale Einstiegspunkt

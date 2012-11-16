@@ -38,8 +38,11 @@ public class NameServer {
 	}
 
 	/*
-	 * example messages: put::name::Address::Port -> ack::put get::name ->
-	 * ack::get::address::port
+	 * example messages:
+	 * put::name::Address::Port
+	 *  -> ack::put
+	 * get::name
+	 *  -> ack::get::address::port
 	 */
 	private String evaluateMessage(String msg) {
 		String[] parts = msg.split("::");
@@ -70,6 +73,7 @@ public class NameServer {
 			} else {
 				System.out.println("[DBG] Failed to calculate answer to '"
 						+ message + "'.");
+				out.write("err".getBytes());
 			}
 			in.close();
 			out.close();
