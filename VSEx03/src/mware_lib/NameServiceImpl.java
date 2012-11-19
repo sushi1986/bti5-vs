@@ -121,7 +121,6 @@ public class NameServiceImpl extends NameService implements Runnable {
         for (String arg : args) {
            call = call.concat("::" + arg);
         }
-  
         call = call.concat("\n");
         System.out.print(call);
         out.write((call).getBytes());
