@@ -8,7 +8,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import nameservice.Info;
@@ -115,7 +117,11 @@ public class NameServiceImpl extends NameService implements Runnable {
         Socket sck = new Socket(info.getHost(), info.getPort());
         BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
         OutputStream out = sck.getOutputStream();
-        String call = "call::" + name + "::" + method + "\n";
+        String call = "call::" + name + "::" + method;
+        for (Object arg : args) {
+            call.concat("::" + arg.toString());
+        }
+        call = call.concat("\n");
         System.out.print(call);
         out.write((call).getBytes());
         String message = in.readLine();
@@ -144,30 +150,22 @@ public class NameServiceImpl extends NameService implements Runnable {
                 String method = parts[2];
                 Object obj = bound.get(name);
                 String returnMessage = null;
-                try {
-                    Object tmp = (String) obj.getClass().getMethod(parts[2]).invoke(obj);
-                    String result = null;
-                    if(tmp == null) {
-                        result = "void";
-                    } else {
-                        result = tmp.toString();
+                if (method.equals("deposit")) {
+                    ((Account) obj).deposit(Double.valueOf(parts[3]));
+                    returnMessage = "void";
+                } else if (method.equals("withdraw")) {
+                    try {
+                        ((Account) obj).withdraw(Double.valueOf(parts[3]));
+                        returnMessage = "void";
+                    } catch (Exception exc) {
+                        returnMessage = "exc::OverdraftException";
                     }
-                    returnMessage = "return::" + name + "::" + method + "::" + result + "\n";
-                } catch (IllegalArgumentException e) {
-                    returnMessage = "exc::" + e.getClass().getName() + "::" + e.getMessage() + "\n";
-                    e.printStackTrace();
-                } catch (SecurityException e) {
-                    returnMessage = "exc::" + e.getClass().getName() + "::" + e.getMessage() + "\n";
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    returnMessage = "exc::" + e.getClass().getName() + "::" + e.getMessage() + "\n";
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    returnMessage = "exc::" + e.getClass().getName() + "::" + e.getMessage() + "\n";
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
-                    returnMessage = "exc::" + e.getClass().getName() + "::" + e.getMessage() + "\n";
-                    e.printStackTrace();
+                } else if (method.equals("getBalance") && parts.length == 3) {
+                    returnMessage = String.valueOf(((Account) obj).getBalance());
+                } else if (method.equals("createAccount")) {
+                    returnMessage = ((Manager)obj).createAccount(parts[3]);
+                } else if (method.equals("getBalance")) {
+                    returnMessage = String.valueOf(((Manager)obj).getBalance(parts[3]));
                 }
                 OutputStream out = sck.getOutputStream();
                 out.write(returnMessage.getBytes());
