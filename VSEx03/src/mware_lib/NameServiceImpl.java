@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
+import nameservice.Info;
+
 import branch_access.Manager;
 import branch_access.ManagerRemote;
 
@@ -20,6 +22,7 @@ import cash_access.AccountRemote;
 public class NameServiceImpl extends NameService implements Runnable {
 
     private Map<String, Object> bound;
+    private Map<String, Info> resolved;
     private volatile boolean running;
     private ServerSocket srvSck;
 
@@ -39,6 +42,7 @@ public class NameServiceImpl extends NameService implements Runnable {
         this.host = srvHost;
         this.port = srvPort;
         bound = new HashMap<String, Object>();
+        resolved = new HashMap<String, Info>();
     }
 
     @Override
@@ -88,10 +92,11 @@ public class NameServiceImpl extends NameService implements Runnable {
                 System.out.println("[DBG] Resolve answer was wrong ...");
                 return null;
             } else {
+                resolved.put(name, new Info(name, null, parts[3], Integer.valueOf(parts[4])));
                 if (parts[2].equals("account")) {
-                    return new AccountRemote(name, parts[3], Integer.valueOf(parts[4]));
+                    return new AccountRemote(name, host, port);
                 } else if (parts[2].equals("manager")) {
-                    return new ManagerRemote(name, parts[3], Integer.valueOf(parts[4]));
+                    return new ManagerRemote(name, host, port);
                 } else {
                     return null;
                 }
@@ -106,7 +111,8 @@ public class NameServiceImpl extends NameService implements Runnable {
      * call::NAME::METHOD::arg0::arg1... return::NAME::METHOD::VALUE
      */
     public String callOnResolved(String name, String method, String... args) throws UnknownHostException, IOException {
-        Socket sck = new Socket(host, port);
+        Info info = resolved.get(name);
+        Socket sck = new Socket(info.getHost(), info.getPort());
         BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
         OutputStream out = sck.getOutputStream();
         String call = "call::" + name + "::" + method + "\n";
