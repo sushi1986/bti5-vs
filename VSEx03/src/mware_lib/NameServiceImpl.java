@@ -20,6 +20,7 @@ import branch_access.ManagerRemote;
 
 import cash_access.Account;
 import cash_access.AccountRemote;
+import cash_access.OverdraftException;
 
 public class NameServiceImpl extends NameService implements Runnable {
 
@@ -112,7 +113,7 @@ public class NameServiceImpl extends NameService implements Runnable {
     /*
      * call::NAME::METHOD::arg0::arg1... return::NAME::METHOD::VALUE
      */
-    public String callOnResolved(String name, String method, String... args) throws UnknownHostException, IOException {
+    public String callOnResolved(String name, String method, String... args) throws UnknownHostException, IOException, OverdraftException {
         Info info = resolved.get(name);
         Socket sck = new Socket(info.getHost(), info.getPort());
         BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
@@ -128,6 +129,9 @@ public class NameServiceImpl extends NameService implements Runnable {
         System.out.println("[DBG] Answer to call: '" + message + "'");
         String[] parts = message.split("::");
         if (parts[0].equals("exc")) {
+            if(parts[1].equals("OverdraftException")) {
+                throw new OverdraftException(parts[2]);
+            }
             return null;
         } else if (parts.length != 4) {
             return null;
@@ -158,7 +162,7 @@ public class NameServiceImpl extends NameService implements Runnable {
                         ((Account) obj).withdraw(Double.valueOf(parts[3]));
                         result = "void";
                     } catch (Exception exc) {
-                        result = "exc::OverdraftException";
+                        result = "exc::OverdraftException::"+exc.getMessage();
                     }
                 } else if (method.equals("getBalance") && parts.length == 3) {
                     result = String.valueOf(((Account) obj).getBalance());
@@ -168,7 +172,7 @@ public class NameServiceImpl extends NameService implements Runnable {
                     result = String.valueOf(((Manager)obj).getBalance(parts[3]));
                 }
                 OutputStream out = sck.getOutputStream();
-                String returnMessage = "return::"+name+"::"+method+"::"+result;
+                String returnMessage = "return::"+name+"::"+method+"::"+result+"\n";
                 out.write(returnMessage.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
