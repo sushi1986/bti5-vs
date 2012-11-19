@@ -11,6 +11,12 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
+import branch_access.Manager;
+import branch_access.ManagerRemote;
+
+import cash_access.Account;
+import cash_access.AccountRemote;
+
 public class NameServiceImpl extends NameService implements Runnable {
 
     private Map<String, Object> bound;
@@ -41,9 +47,19 @@ public class NameServiceImpl extends NameService implements Runnable {
             Socket sck = new Socket(host, port);
             BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
             OutputStream out = sck.getOutputStream();
-            System.out.println("put::" + name + "::" + sck.getLocalAddress().getHostAddress() + "::" + listenPort);
-            out.write(("put::" + name + "::" + sck.getLocalAddress().getHostAddress() + "::" + listenPort + "\n")
-                    .getBytes());
+            String superClass = null;
+            if (servant instanceof Account) {
+                superClass = "account";
+            } else if (servant instanceof Manager) {
+                superClass = "manager";
+            } else {
+                System.out.println("Cass '" + servant.getClass().getName() + "' is not supported.");
+                return;
+            }
+            String putMessage = "put::" + name + "::" + superClass + "::" + sck.getLocalAddress().getHostAddress()
+                    + "::" + listenPort + "\n";
+            System.out.print(putMessage);
+            out.write(putMessage.getBytes());
             String message = in.readLine();
             System.out.println("[DBG] Answer to rebind: '" + message + "'");
             bound.put(name, servant);
@@ -54,77 +70,42 @@ public class NameServiceImpl extends NameService implements Runnable {
         }
     }
 
-//    @Override
-//    public Object resolve(String name) {
-//        String[] parts = null;
-//        try {
-//            Socket sck = new Socket(host, port);
-//            BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
-//            OutputStream out = sck.getOutputStream();
-//            System.out.print("get::" + name + "\n");
-//            out.write(("get::" + name + "\n").getBytes());
-//            String message = in.readLine();
-//            System.out.println("[DBG] Answer to resolve: '" + message + "'");
-//            parts = message.split("::");
-//        } catch (UnknownHostException e) {
-//            e.printStackTrace();
-//            return null;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//        if (parts[0].equals("exc")) {
-//            //throw exception ?
-//            return null;
-//        } else if (!parts[0].equals("ack")) {
-//            // throw exception
-//            return null;
-//        } else { // ack 
-//            String newName = name.replace("Impl", "Remote");
-//            Object obj = null;
-//            try {
-//                obj = Class.forName(newName).newInstance();
-//            } catch (InstantiationException e) {
-//                e.printStackTrace();
-//            } catch (IllegalAccessException e) {
-//                e.printStackTrace();
-//            } catch (ClassNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//            return obj;
-//        }
-//    }
-    
     @Override
     public Object resolve(String name) {
         try {
             Socket sck = new Socket(host, port);
             BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
             OutputStream out = sck.getOutputStream();
-            System.out.print("get::" + name + "\n");
-            out.write(("get::" + name + "\n").getBytes());
+            String getMessage = "get::" + name + "\n";
+            System.out.print(getMessage);
+            out.write(getMessage.getBytes());
             String message = in.readLine();
             System.out.println("[DBG] Answer to resolve: '" + message + "'");
             String[] parts = message.split("::");
             if (parts[0].equals("exc")) {
                 return null;
-            } else if (!parts[0].equals("ack")) {
+            } else if (!parts[0].equals("ack") || !parts[1].equals("get") || parts.length < 3) {
+                System.out.println("[DBG] Resolve answer was wrong ...");
                 return null;
-            } else { // ack 
-                String newName = name.replace("Impl", "Remote");
-                return Class.forName(newName).newInstance(); // argumente ...
+            } else {
+                if (parts[2].equals("account")) {
+                    return new AccountRemote(parts[3], Integer.valueOf(parts[4]));
+                } else if (parts[2].equals("manager")) {
+                    return new ManagerRemote(parts[3], Integer.valueOf(parts[4]));
+                } else {
+                    return null;
+                }
             }
         } catch (Exception exc) {
+            System.out.println("[DBG] Resolve, caught them all!");
             return null;
         }
-        
     }
 
     /*
      * call::NAME::METHOD::arg0::arg1... return::NAME::METHOD::VALUE
      */
-    public String callOnResolved(String name, String method, String... args) throws UnknownHostException,
-            IOException {
+    public String callOnResolved(String name, String method, String... args) throws UnknownHostException, IOException {
         Socket sck = new Socket(host, port);
         BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
         OutputStream out = sck.getOutputStream();
@@ -139,7 +120,7 @@ public class NameServiceImpl extends NameService implements Runnable {
         } else if (parts.length != 4) {
             return null;
         } else {
-            return parts[3]; // type is always String ...
+            return parts[3];
         }
     }
 

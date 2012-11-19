@@ -24,14 +24,14 @@ public class NameServer {
 	}
 
 	private String putMsg(final String[] msg) {
-		infos.put(msg[1], new Info(msg[1], msg[2], Integer.valueOf(msg[3])));
+		infos.put(msg[1], new Info(msg[1], msg[2], msg[3], Integer.valueOf(msg[4])));
 		return "ack::put";
 	}
 
 	private String getMsg(final String[] msg) {
 		if (infos.containsKey(msg[1])) {
 			Info tmp = infos.get(msg[1]);
-			return "ack::get::" + tmp.getHost() + "::" + tmp.getPort();
+			return "ack::get::" + tmp.getSuperClass() + "::" +tmp.getHost() + "::" + tmp.getPort();
 		} else {
 			return null;
 		}
@@ -46,7 +46,7 @@ public class NameServer {
 	 */
 	private String evaluateMessage(String msg) {
 		String[] parts = msg.split("::");
-		if (parts[0].equals("put") && parts.length == 4) {
+		if (parts[0].equals("put") && parts.length == 5) {
 			return putMsg(parts);
 		} else if (parts[0].equals("get") && parts.length == 2) {
 			return getMsg(parts);
