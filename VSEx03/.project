@@ -14,4 +14,21 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>bank.jar</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/bin/bank.jar</locationURI>
+		</link>
+		<link>
+			<name>filiale.jar</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/bin/filiale.jar</locationURI>
+		</link>
+		<link>
+			<name>geldautomat.jar</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/bin/geldautomat.jar</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

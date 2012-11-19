@@ -17,9 +17,10 @@ public class ObjectBroker {
 		this.port = port;
 	}
 
+	static int portX =2555;
 	// Liefert den Namensdienst (Stellvetreterobjekt).
 	public NameService getNameService() {
-		NameServiceImpl tmp = new NameServiceImpl(2552, host, port);
+		NameServiceImpl tmp = new NameServiceImpl(portX++, host, port);
 		Thread thread = new Thread(tmp);
 		this.thread = thread;
 		thread.start();

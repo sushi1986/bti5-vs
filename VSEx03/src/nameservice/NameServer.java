@@ -17,7 +17,7 @@ public class NameServer {
 	NameServer() {
 		infos = new HashMap<String, Info>();
 		try {
-			svrSocket = new ServerSocket(14001);
+			svrSocket = new ServerSocket(2553);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
