@@ -118,9 +118,10 @@ public class NameServiceImpl extends NameService implements Runnable {
         BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
         OutputStream out = sck.getOutputStream();
         String call = "call::" + name + "::" + method;
-        for (Object arg : args) {
-            call.concat("::" + arg.toString());
+        for (String arg : args) {
+           call = call.concat("::" + arg);
         }
+  
         call = call.concat("\n");
         System.out.print(call);
         out.write((call).getBytes());

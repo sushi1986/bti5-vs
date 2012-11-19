@@ -31,6 +31,7 @@ public class ManagerRemote extends Manager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println(result);
 		if (result != null) {
 			// alles OK
 			return result;
