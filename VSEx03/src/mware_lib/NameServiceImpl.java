@@ -89,9 +89,9 @@ public class NameServiceImpl extends NameService implements Runnable {
                 return null;
             } else {
                 if (parts[2].equals("account")) {
-                    return new AccountRemote(parts[3], Integer.valueOf(parts[4]));
+                    return new AccountRemote(name, parts[3], Integer.valueOf(parts[4]));
                 } else if (parts[2].equals("manager")) {
-                    return new ManagerRemote(parts[3], Integer.valueOf(parts[4]));
+                    return new ManagerRemote(name, parts[3], Integer.valueOf(parts[4]));
                 } else {
                     return null;
                 }
@@ -137,11 +137,16 @@ public class NameServiceImpl extends NameService implements Runnable {
                 String name = parts[1];
                 String method = parts[2];
                 Object obj = bound.get(name);
-                String rc = null;
                 String returnMessage = null;
                 try {
-                    rc = (String) obj.getClass().getMethod(parts[2]).invoke(obj);
-                    returnMessage = "return::" + name + "::" + method + "::" + rc + "\n";
+                    Object tmp = (String) obj.getClass().getMethod(parts[2]).invoke(obj);
+                    String result = null;
+                    if(tmp == null) {
+                        result = "void";
+                    } else {
+                        result = tmp.toString();
+                    }
+                    returnMessage = "return::" + name + "::" + method + "::" + result + "\n";
                 } catch (IllegalArgumentException e) {
                     returnMessage = "exc::" + e.getClass().getName() + "::" + e.getMessage() + "\n";
                     e.printStackTrace();
