@@ -149,25 +149,26 @@ public class NameServiceImpl extends NameService implements Runnable {
                 String name = parts[1];
                 String method = parts[2];
                 Object obj = bound.get(name);
-                String returnMessage = null;
+                String result = null;
                 if (method.equals("deposit")) {
                     ((Account) obj).deposit(Double.valueOf(parts[3]));
-                    returnMessage = "void";
+                    result = "void";
                 } else if (method.equals("withdraw")) {
                     try {
                         ((Account) obj).withdraw(Double.valueOf(parts[3]));
-                        returnMessage = "void";
+                        result = "void";
                     } catch (Exception exc) {
-                        returnMessage = "exc::OverdraftException";
+                        result = "exc::OverdraftException";
                     }
                 } else if (method.equals("getBalance") && parts.length == 3) {
-                    returnMessage = String.valueOf(((Account) obj).getBalance());
+                    result = String.valueOf(((Account) obj).getBalance());
                 } else if (method.equals("createAccount")) {
-                    returnMessage = ((Manager)obj).createAccount(parts[3]);
+                    result = ((Manager)obj).createAccount(parts[3]);
                 } else if (method.equals("getBalance")) {
-                    returnMessage = String.valueOf(((Manager)obj).getBalance(parts[3]));
+                    result = String.valueOf(((Manager)obj).getBalance(parts[3]));
                 }
                 OutputStream out = sck.getOutputStream();
+                String returnMessage = "return::"+name+"::"+method+"::"+result;
                 out.write(returnMessage.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
