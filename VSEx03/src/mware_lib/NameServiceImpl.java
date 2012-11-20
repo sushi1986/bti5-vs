@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import nameservice.Info;
+import nameserver.Info;
 import branch_access.Manager;
 import branch_access.ManagerRemote;
 import cash_access.Account;
