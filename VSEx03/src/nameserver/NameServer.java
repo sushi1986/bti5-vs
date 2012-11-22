@@ -29,6 +29,7 @@ public class NameServer {
 		return "ack::put";
 	}
 
+
     private String getMsg(final String[] msg) {
         if (infos.containsKey(msg[1])) {
             Info tmp = infos.get(msg[1]);
@@ -37,6 +38,7 @@ public class NameServer {
             return null;
         }
     }
+
 
 //    /*
 //     * example messages: put::name::Address::Port -> ack::put get::name ->
@@ -53,6 +55,7 @@ public class NameServer {
 //        }
 //    }
 
+
     public boolean processNextMessage() {
         BufferedReader in;
         OutputStream out;
@@ -64,6 +67,7 @@ public class NameServer {
             out = sck.getOutputStream();
             String message = in.readLine();
             System.out.println("[DBG] Received: '" + message + "'.");
+
         	String[] parts = message.split("::");
 			if (parts[0].equals("put") && parts.length == 5) {
 				rc = putMsg(parts,sck.getInetAddress().getHostAddress());
@@ -78,6 +82,7 @@ public class NameServer {
 						+ message + "'.");
 				out.write("err".getBytes());
 			}
+
             in.close();
             out.close();
             sck.close();
