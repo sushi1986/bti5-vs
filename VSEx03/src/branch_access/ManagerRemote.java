@@ -14,33 +14,27 @@ public class ManagerRemote extends Manager {
 	String name;
 
 	public ManagerRemote(String name, String serviceHost, int listenPort) {
-		this.name = name;
-
 		ObjectBroker ob = ObjectBroker.getBroker(serviceHost, listenPort);
 		this.ns = (NameServiceImpl) ob.getNameService();
+		this.name = name;
 	}
 
 	@Override
 	public String createAccount(String owner) {
-		// TODO Auto-generated method stub
 		String result = null;
 		try {
 			result = ns.callOnResolved(name, "createAccount", owner);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (OverdraftException e) {
-		    
+		    return null;
 		}
 		System.out.println(result);
 		if (result != null) {
-			// alles OK
 			return result;
 		} else {
-			// nicht alles OK
 			return null;
 		}
 	}
@@ -51,19 +45,15 @@ public class ManagerRemote extends Manager {
 		try {
 			result = ns.callOnResolved(name, "getBalance", accountID);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (OverdraftException e) {
-		    
+		    return -1;
 		}
 		if (result != null) {
-			// alles OK
 			return new Double(result).doubleValue();
 		} else {
-			// nicht alles OK
 			return -1;
 		}
 	}

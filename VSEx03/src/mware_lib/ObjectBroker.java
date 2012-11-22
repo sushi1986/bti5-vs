@@ -6,18 +6,17 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ObjectBroker {
 
+    private final int MAX_PORT = 65536;
+    
 	private static ObjectBroker broker;
 	private static Lock mutex = new ReentrantLock();
-
+	
 	private Thread thread;
 	private NameServiceImpl nsi;
 
-
 	public ObjectBroker(String host, int port) {
 		super();
-
-		short randomPort = (short) (new Random().nextInt(64511/*Wegen 2^16 Ports minus 1024 belegter*/)+1025);
-		
+		short randomPort = (short) (new Random().nextInt(MAX_PORT-1025)+1025);
 		nsi = new NameServiceImpl(randomPort, host, port);
 		Thread thread = new Thread(nsi);
 		this.thread = thread;

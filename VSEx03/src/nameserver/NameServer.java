@@ -67,7 +67,6 @@ public class NameServer {
             out = sck.getOutputStream();
             String message = in.readLine();
             System.out.println("[DBG] Received: '" + message + "'.");
-
         	String[] parts = message.split("::");
 			if (parts[0].equals("put") && parts.length == 5) {
 				rc = putMsg(parts,sck.getInetAddress().getHostAddress());
@@ -82,7 +81,6 @@ public class NameServer {
 						+ message + "'.");
 				out.write("err".getBytes());
 			}
-
             in.close();
             out.close();
             sck.close();

@@ -23,18 +23,16 @@ public class AccountRemote extends Account {
 		try {
 			result = ns.callOnResolved(name, "deposit", String.valueOf(amount));
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (OverdraftException e) {
-		    
+		    System.out.println("[!!!] Error ... in deposite: You do not own enough money ...");
 		}
 		if (result.equals("void")) {
-			// alles OK
+		    return;
 		} else {
-			// nicht alles OK
+		    System.out.println("[!!!] Error ... in deposit.");
 		}
 	}
 
@@ -45,16 +43,14 @@ public class AccountRemote extends Account {
 			result = ns
 					.callOnResolved(name, "withdraw", String.valueOf(amount));
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (result.equals("void")) {
-			// alles OK
+			return;
 		} else {
-			// nicht alles OK
+			System.out.println("[!!!] Error ... in withdraw.");
 		}
 	}
 
@@ -64,19 +60,15 @@ public class AccountRemote extends Account {
 		try {
 			result = ns.callOnResolved(name, "getBalance");
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (OverdraftException e) {
-		    
+		    return -1;
 		}
 		if (result != null) {
-			// alles OK
 			return new Double(result).doubleValue();
 		} else {
-			// nicht alles OK
 			return -1;
 		}
 	}
