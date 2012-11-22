@@ -3,6 +3,8 @@ package branch_access;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import cash_access.OverdraftException;
+
 import mware_lib.NameServiceImpl;
 import mware_lib.ObjectBroker;
 
@@ -30,6 +32,8 @@ public class ManagerRemote extends Manager {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (OverdraftException e) {
+		    
 		}
 		System.out.println(result);
 		if (result != null) {
@@ -52,6 +56,8 @@ public class ManagerRemote extends Manager {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (OverdraftException e) {
+		    
 		}
 		if (result != null) {
 			// alles OK

@@ -1,4 +1,4 @@
-package nameservice;
+package nameserver;
 
 public class Info {
 	String name;

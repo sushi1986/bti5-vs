@@ -28,6 +28,8 @@ public class AccountRemote extends Account {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (OverdraftException e) {
+		    
 		}
 		if (result.equals("void")) {
 			// alles OK
@@ -67,6 +69,8 @@ public class AccountRemote extends Account {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (OverdraftException e) {
+		    
 		}
 		if (result != null) {
 			// alles OK
