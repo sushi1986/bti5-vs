@@ -16,7 +16,7 @@ public class ObjectBroker {
 
 	public ObjectBroker(String host, int port) {
 		super();
-		short randomPort = (short) (new Random().nextInt(MAX_PORT-1025)+1025);
+		int randomPort =  new Random().nextInt(MAX_PORT-1025)+1025;
 		nsi = new NameServiceImpl(randomPort, host, port);
 		Thread thread = new Thread(nsi);
 		this.thread = thread;
