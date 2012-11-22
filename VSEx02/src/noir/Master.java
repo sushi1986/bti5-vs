@@ -31,7 +31,7 @@ public class Master extends UntypedActor {
 																																				// //"1137047281562824484226171575219374004320812483047";
 	static boolean HAS_GUI = false;
 
-	final int NUMBER_OF_LOCAL_WORKERS = 4;
+	final int NUMBER_OF_LOCAL_WORKERS = 8;
 
 	final static boolean DEBUG = true;
 

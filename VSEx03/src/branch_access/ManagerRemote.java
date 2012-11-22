@@ -26,8 +26,10 @@ public class ManagerRemote extends Manager {
 			result = ns.callOnResolved(name, "createAccount", owner);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		} catch (OverdraftException e) {
 		    return null;
 		}
@@ -46,8 +48,10 @@ public class ManagerRemote extends Manager {
 			result = ns.callOnResolved(name, "getBalance", accountID);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			return -1;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return -1;
 		} catch (OverdraftException e) {
 		    return -1;
 		}
