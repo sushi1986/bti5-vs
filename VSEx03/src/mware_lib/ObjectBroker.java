@@ -12,7 +12,7 @@ public class ObjectBroker {
 	private Thread thread;
 	private NameServiceImpl nsi;
 
-	final static int PORT = 2555;
+	final static int PORT = 2554;
 
 	public ObjectBroker(String host, int port) {
 		super();

@@ -62,7 +62,7 @@ public class NameServiceImpl extends NameService implements Runnable {
                 System.out.println("Cass '" + servant.getClass().getName() + "' is not supported.");
                 return;
             }
-            String putMessage = "put::" + name + "::" + superClass + "::" + sck.getLocalAddress().getHostAddress()
+            String putMessage = "put::" + name + "::" + superClass + "::" + sck.getLocalAddress().toString()
                     + "::" + listenPort + "\n";
             System.out.print(putMessage);
             out.write(putMessage.getBytes());
@@ -168,7 +168,7 @@ public class NameServiceImpl extends NameService implements Runnable {
                     result = String.valueOf(((Manager)obj).getBalance(parts[3]));
                 }
                 OutputStream out = sck.getOutputStream();
-                String returnMessage = "return::"+name+"::"+method+"::"+result;
+                String returnMessage = "return::"+name+"::"+method+"::"+result+"\n";
                 out.write(returnMessage.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();

@@ -23,8 +23,8 @@ public class NameServer {
 		}
 	}
 
-	private String putMsg(final String[] msg) {
-		infos.put(msg[1], new Info(msg[1], msg[2], msg[3], Integer.valueOf(msg[4])));
+	private String putMsg(final String[] msg, String host) {
+		infos.put(msg[1], new Info(msg[1], msg[2], host, Integer.valueOf(msg[4])));
 		return "ack::put";
 	}
 
@@ -44,16 +44,16 @@ public class NameServer {
 	 * get::name
 	 *  -> ack::get::address::port
 	 */
-	private String evaluateMessage(String msg) {
-		String[] parts = msg.split("::");
-		if (parts[0].equals("put") && parts.length == 5) {
-			return putMsg(parts);
-		} else if (parts[0].equals("get") && parts.length == 2) {
-			return getMsg(parts);
-		} else {
-			return null;
-		}
-	}
+//	private String evaluateMessage(String msg) {
+//		String[] parts = msg.split("::");
+//		if (parts[0].equals("put") && parts.length == 5) {
+//			return putMsg(parts);
+//		} else if (parts[0].equals("get") && parts.length == 2) {
+//			return getMsg(parts);
+//		} else {
+//			return null;
+//		}
+//	}
 
 	public boolean processNextMessage() {
 		BufferedReader in;
@@ -66,7 +66,13 @@ public class NameServer {
 			out = sck.getOutputStream();
 			String message = in.readLine();
 			System.out.println("[DBG] Received: '" + message + "'.");
-			rc = evaluateMessage(message);
+//			rc = evaluateMessage(message);
+			String[] parts = message.split("::");
+			if (parts[0].equals("put") && parts.length == 5) {
+				rc = putMsg(parts,sck.getInetAddress().getHostAddress());
+			} else if (parts[0].equals("get") && parts.length == 2) {
+				rc = getMsg(parts);
+			}
 			if (rc != null) {
 				System.out.println("[DBG] Answer: '" + rc + "'.");
 				out.write(rc.getBytes());
