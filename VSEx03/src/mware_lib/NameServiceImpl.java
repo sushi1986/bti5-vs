@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -11,8 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nameserver.Info;
-import branch_access.Manager;
-import cash_access.Account;
 
 public class NameServiceImpl extends NameService implements Runnable {
 
@@ -79,13 +79,13 @@ public class NameServiceImpl extends NameService implements Runnable {
                 System.out.println("[DBG] Resolve answer was wrong ...");
                 return null;
             } else {
-                String absClass = parts[2]; 
+                String absClass = parts[2];
                 String host = parts[3];
                 int port = Integer.valueOf(parts[4]);
                 resolved.put(name, new Info(name, null, host, port));
-                Class<?>[] argTypes= new Class<?>[]{String.class, String.class, Integer.class};
+                Class<?>[] argTypes = new Class<?>[] { String.class, String.class, Integer.class };
                 Object obj = null;
-                obj = Class.forName(absClass+"Remote").getConstructor(argTypes).newInstance(name, host, port);
+                obj = Class.forName(absClass + "Remote").getConstructor(argTypes).newInstance(name, host, port);
                 return obj;
             }
         } catch (Exception exc) {
@@ -118,9 +118,10 @@ public class NameServiceImpl extends NameService implements Runnable {
             if (parts[3].equals("exc")) {
                 String excName = parts[4];
                 String excArgument = (parts[5].equals("null") ? null : parts[5]);
-                System.out.println("[!!!] throwing exception: '"+excName+"' with argument '"+excArgument+"'.");
+                System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
                 Exception exc = null;
-                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[]{String.class}).newInstance(excArgument);
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class })
+                        .newInstance(excArgument);
                 throw exc;
             } else {
                 return parts[3];
@@ -142,26 +143,59 @@ public class NameServiceImpl extends NameService implements Runnable {
                 String method = parts[2];
                 Object obj = bound.get(name);
                 String result = null;
-                if (method.equals("deposit")) {
+
+                Class<? extends Object> c = obj.getClass();
+
+                Method[] m = c.getMethods();
+
+                Method calledM = null;
+                for (int i = 0; i < m.length; i++) {
+                    if (m[i].getName().equals(method)) {
+                        Class<? extends Object>[] params = m[i].getParameterTypes();
+                        System.out.println("[NSI] found method: " + i + " " + m[i]);
+
+                        if (params.length == parts.length - 3) {
+                            // dann ausfŸhren
+                            calledM = m[i];
+                            System.out.println("[NSI] found method: " + m[i]);
+                        }
+                    }
+                }
+
+                if (calledM != null) {
+                    Object ret = null;
+                    Object[] args = new Object[] {};
+                    if (parts.length - 3 > 0) {
+                        double d = 0;
+                        boolean gabsExc = false;
+
+                        try {
+                            d = new Double(parts[3]).doubleValue();
+                        } catch (Exception e) {
+                            gabsExc = true;
+                        }
+
+                        if (gabsExc) {
+                            args = new Object[] { parts[3] };
+                        } else {
+                            args = new Object[] { d };
+                        }
+
+                    }
+
                     try {
-                        ((Account) obj).deposit(Double.valueOf(parts[3]));
-                        result = "void";
+                        ret = calledM.invoke(obj, args);
+                        if (ret == null) {
+                            result = "void";
+                        } else {
+                            result = ret.toString();
+                        }
+                    } catch (InvocationTargetException e) {
+                        result = "exc::" + e.getTargetException().getClass().getName() + "::"
+                                + e.getTargetException().getMessage();
                     } catch (Exception exc) {
                         result = "exc::" + exc.getClass().getName() + "::" + exc.getMessage();
                     }
-                } else if (method.equals("withdraw")) {
-                    try {
-                        ((Account) obj).withdraw(Double.valueOf(parts[3]));
-                        result = "void";
-                    } catch (Exception exc) {
-                        result = "exc::" + exc.getClass().getName() + "::" + exc.getMessage();
-                    }
-                } else if (method.equals("getBalance") && parts.length == 3) {
-                    result = String.valueOf(((Account) obj).getBalance());
-                } else if (method.equals("createAccount")) {
-                    result = ((Manager) obj).createAccount(parts[3]);
-                } else if (method.equals("getBalance")) {
-                    result = String.valueOf(((Manager) obj).getBalance(parts[3]));
                 }
                 OutputStream out = sck.getOutputStream();
                 String returnMessage = "return::" + name + "::" + method + "::" + result + "\n";
