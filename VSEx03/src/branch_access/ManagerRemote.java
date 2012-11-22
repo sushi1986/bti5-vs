@@ -1,10 +1,5 @@
 package branch_access;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-
-import cash_access.OverdraftException;
-
 import mware_lib.NameServiceImpl;
 import mware_lib.ObjectBroker;
 
@@ -24,14 +19,12 @@ public class ManagerRemote extends Manager {
 		String result = null;
 		try {
 			result = ns.callOnResolved(name, "createAccount", owner);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (OverdraftException e) {
-		    return null;
+		} catch (Exception exc) {
+		    if(exc instanceof RuntimeException) {
+                throw (RuntimeException) exc;
+            } else {
+                return null;
+            }
 		}
 		System.out.println(result);
 		if (result != null) {
@@ -46,14 +39,12 @@ public class ManagerRemote extends Manager {
 		String result = null;
 		try {
 			result = ns.callOnResolved(name, "getBalance", accountID);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			return -1;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return -1;
-		} catch (OverdraftException e) {
-		    return -1;
+		} catch (Exception exc) {
+		    if(exc instanceof RuntimeException) {
+                throw (RuntimeException) exc;
+            } else {
+                return -1;
+            }
 		}
 		if (result != null) {
 			return new Double(result).doubleValue();

@@ -39,23 +39,6 @@ public class NameServer {
         }
     }
 
-
-//    /*
-//     * example messages: put::name::Address::Port -> ack::put get::name ->
-//     * ack::get::address::port
-//     */
-//    private String evaluateMessage(String msg) {
-//        String[] parts = msg.split("::");
-//        if (parts[0].equals("put") && parts.length == 5) {
-//            return putMsg(parts);
-//        } else if (parts[0].equals("get") && parts.length == 2) {
-//            return getMsg(parts);
-//        } else {
-//            return null;
-//        }
-//    }
-
-
     public boolean processNextMessage() {
         BufferedReader in;
         OutputStream out;

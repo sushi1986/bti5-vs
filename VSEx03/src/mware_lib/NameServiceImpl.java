@@ -12,10 +12,7 @@ import java.util.Map;
 
 import nameserver.Info;
 import branch_access.Manager;
-import branch_access.ManagerRemote;
 import cash_access.Account;
-import cash_access.AccountRemote;
-import cash_access.OverdraftException;
 
 public class NameServiceImpl extends NameService implements Runnable {
 
@@ -49,15 +46,7 @@ public class NameServiceImpl extends NameService implements Runnable {
             Socket sck = new Socket(host, port);
             BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
             OutputStream out = sck.getOutputStream();
-            String superClass = null;
-            if (servant instanceof Account) {
-                superClass = "account";
-            } else if (servant instanceof Manager) {
-                superClass = "manager";
-            } else {
-                System.out.println("Cass '" + servant.getClass().getName() + "' is not supported.");
-                return;
-            }
+            String superClass = servant.getClass().getSuperclass().getName();
             String putMessage = "put::" + name + "::" + superClass + "::" + sck.getLocalAddress().toString() + "::"
                     + listenPort + "\n";
             System.out.print(putMessage);
@@ -90,14 +79,14 @@ public class NameServiceImpl extends NameService implements Runnable {
                 System.out.println("[DBG] Resolve answer was wrong ...");
                 return null;
             } else {
-                resolved.put(name, new Info(name, null, parts[3], Integer.valueOf(parts[4])));
-                if (parts[2].equals("account")) {
-                    return new AccountRemote(name, host, port);
-                } else if (parts[2].equals("manager")) {
-                    return new ManagerRemote(name, host, port);
-                } else {
-                    return null;
-                }
+                String absClass = parts[2]; 
+                String host = parts[3];
+                int port = Integer.valueOf(parts[4]);
+                resolved.put(name, new Info(name, null, host, port));
+                Class<?>[] argTypes= new Class<?>[]{String.class, String.class, Integer.class};
+                Object obj = null;
+                obj = Class.forName(absClass+"Remote").getConstructor(argTypes).newInstance(name, host, port);
+                return obj;
             }
         } catch (Exception exc) {
             System.out.println("[DBG] Resolve, caught them all!");
@@ -108,8 +97,7 @@ public class NameServiceImpl extends NameService implements Runnable {
     /*
      * call::NAME::METHOD::arg0::arg1... return::NAME::METHOD::VALUE
      */
-    public String callOnResolved(String name, String method, String... args) throws RuntimeException,
-            UnknownHostException, IOException, OverdraftException {
+    public String callOnResolved(String name, String method, String... args) throws Exception {
         Info info = resolved.get(name);
         Socket sck = new Socket(info.getHost(), info.getPort());
         BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
@@ -131,13 +119,9 @@ public class NameServiceImpl extends NameService implements Runnable {
                 String excName = parts[4];
                 String excArgument = (parts[5].equals("null") ? null : parts[5]);
                 System.out.println("[!!!] throwing exception: '"+excName+"' with argument '"+excArgument+"'.");
-                if(excName.contains("RuntimeException")) {
-                    throw new RuntimeException(excArgument);
-                } else if (excName.contains("OverdraftException")) {
-                    throw new OverdraftException(excArgument);
-                } else {
-                    return null;
-                }
+                Exception exc = null;
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[]{String.class}).newInstance(excArgument);
+                throw exc;
             } else {
                 return parts[3];
             }

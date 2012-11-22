@@ -1,9 +1,5 @@
 package cash_access;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.rmi.RemoteException;
-
 import mware_lib.NameServiceImpl;
 import mware_lib.ObjectBroker;
 
@@ -23,12 +19,12 @@ public class AccountRemote extends Account {
         String result = null;
         try {
             result = ns.callOnResolved(name, "deposit", String.valueOf(amount));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (OverdraftException e) {
-            e.printStackTrace();
+        } catch (Exception exc) {
+            if(exc instanceof RuntimeException) {
+                throw (RuntimeException) exc;
+            } else {
+                return;
+            }
         }
         if (result.equals("void")) {
             return;
@@ -42,14 +38,14 @@ public class AccountRemote extends Account {
         String result = null;
         try {
             result = ns.callOnResolved(name, "withdraw", String.valueOf(amount));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        } catch (OverdraftException e) {
-            System.out.println("[!!!] Found it!!!!");
+        } catch (Exception exc) {
+            if(exc instanceof RuntimeException) {
+                throw (RuntimeException) exc;
+            } else if (exc instanceof OverdraftException) {
+                throw (OverdraftException) exc;
+            } else {
+                return;
+            }
         }
         if (result.equals("void")) {
             return;
@@ -63,14 +59,12 @@ public class AccountRemote extends Account {
         String result = null;
         try {
             result = ns.callOnResolved(name, "getBalance");
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return -1;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return -1;
-        } catch (OverdraftException e) {
-            return -1;
+        } catch (Exception exc) {
+            if(exc instanceof RuntimeException) {
+                throw (RuntimeException) exc;
+            } else {
+                return -1;
+            }
         }
         if (result != null) {
             return new Double(result).doubleValue();
