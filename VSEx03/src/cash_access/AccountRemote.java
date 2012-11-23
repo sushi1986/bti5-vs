@@ -17,7 +17,7 @@ public class AccountRemote extends Account {
     @Override
     public void deposit(double amount) {
         String result = null;
-        result = ns.callOnResolved(name, "deposit", String.valueOf(amount));
+        result = ns.callOnResolved(name, "deposit", amount);
         if (result != null && result.startsWith("exc")) {
             String[] parts = result.split("::");
             String excName = parts[1];
@@ -46,7 +46,7 @@ public class AccountRemote extends Account {
     @Override
     public void withdraw(double amount) throws OverdraftException {
         String result = null;
-        result = ns.callOnResolved(name, "withdraw", String.valueOf(amount));
+        result = ns.callOnResolved(name, "withdraw", amount);
         if (result != null && result.startsWith("exc")) {
             String[] parts = result.split("::");
             String excName = parts[1];

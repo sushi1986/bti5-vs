@@ -2,7 +2,7 @@ package mware_lib;
 
 public class Info {
     String name;
-    int port;
+    int port; 
     String host;
 
     public Info(String name, String host, int port) {
