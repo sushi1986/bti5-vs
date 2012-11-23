@@ -36,7 +36,8 @@ public class Communicator extends NameService implements Runnable {
         try {
             srvSck = new ServerSocket(localPort);
         } catch (IOException e) {
-            if (DEBUG) System.err.println("[!!!] Could not open server socker on '" + localPort +"'.");
+            if (DEBUG)
+                System.err.println("[!!!] Could not open server socker on '" + localPort + "'.");
         }
         this.listenPort = localPort;
         this.host = srvHost;
@@ -62,7 +63,9 @@ public class Communicator extends NameService implements Runnable {
                 System.out.println("[DBG] Answer to rebind '" + name + "': '" + message + "'");
             bound.put(name, servant);
         } catch (Exception e) {
-            if (DEBUG) System.err.println("[!!!] Rebind failed: '" + e.getLocalizedMessage() + "'.");
+            if (DEBUG)
+                System.err.println("[!!!] Rebind failed: '" + e.getLocalizedMessage() + "'.");
+            throw new MiddlewareException("This is not your fault, Will Hunting!");
         }
     }
 
@@ -99,7 +102,7 @@ public class Communicator extends NameService implements Runnable {
         } catch (Exception exc) {
             if (DEBUG)
                 System.err.println("[!!!] Could not resolve: '" + name + "'.");
-            return null;
+            throw new MiddlewareException("This is not your fault, Will Hunting!");
         }
     }
 
@@ -120,11 +123,13 @@ public class Communicator extends NameService implements Runnable {
             out.write((call).getBytes());
             message = in.readLine();
         } catch (IOException e) {
-            return "exc::" + e.getClass().getName() + "::" + e.getMessage();
+            if (DEBUG)
+                System.err.println("[!!!] Could not call '" + method + "' on '" + name + "'.");
+            throw new MiddlewareException("This is not your fault, Will Hunting!");
         }
         String[] parts = message.split("::");
         if (!parts[0].equals("return")) {
-            return null;
+            throw new MiddlewareException("This is not your fault, Will Hunting!");
         } else {
             if (parts[3].equals("exc")) {
                 String excName = parts[4];
@@ -145,12 +150,15 @@ public class Communicator extends NameService implements Runnable {
                 Thread para = new Thread() {
                     @Override
                     public void run() {
+                        String result = null;
+                        String name = null;
+                        String method = null;
                         try {
                             BufferedReader in = new BufferedReader(new InputStreamReader(sck.getInputStream()));
                             String message = in.readLine();
                             String[] parts = message.split("::");
-                            String name = parts[1];
-                            String method = parts[2];
+                            name = parts[1];
+                            method = parts[2];
                             Object obj = bound.get(name);
                             Class<?> objClass = obj.getClass();
                             Class<?>[] argTypes = new Class<?>[parts.length - 3];
@@ -159,50 +167,37 @@ public class Communicator extends NameService implements Runnable {
                                 String[] arg = parts[j + 3].split(":");
                                 String type = arg[0];
                                 String value = arg[1];
-                                try {
-                                    Class<?> tmp = Class.forName(type);
-                                    if (tmp.getName().contains("Double")) {
-                                        argTypes[j] = double.class;
-                                    } else {
-                                        argTypes[j] = tmp;
-                                    }
-                                    args[j] = tmp.getConstructor(String.class).newInstance(value);
-                                } catch (Exception e) {
-                                    if (DEBUG)
-                                        System.err.println("[!!!] Problem obtaining arguments for call '" + method
-                                                + "' on '" + name + "'.");
-                                }
-                            }
-                            String result = null;
-                            Object ret = null;
-                            try {
-                            	Method m = objClass.getMethod(method, argTypes);
-                            	m.setAccessible(true);
-                                ret = m.invoke(obj, args);
-                                if (ret == null) {
-                                    result = "void";
+                                Class<?> tmp = Class.forName(type);
+                                if (tmp.getName().contains("Double")) {
+                                    argTypes[j] = double.class;
                                 } else {
-                                    result = ret.toString();
+                                    argTypes[j] = tmp;
                                 }
-                            } catch (InvocationTargetException e) {
-                                result = "exc::" + e.getTargetException().getClass().getName() + "::"
-                                        + e.getTargetException().getMessage();
-                            } catch (Exception exc) {
-                                if (DEBUG)
-                                    System.err.println("[!!!] Exception with reflections (" + exc.getLocalizedMessage()
-                                            + ").");
-                                result = "exc::" + exc.getClass().getName() + "::" + exc.getMessage();
+                                args[j] = tmp.getConstructor(String.class).newInstance(value);
                             }
-                            OutputStream out;
-                            out = sck.getOutputStream();
-                            String returnMessage = "return::" + name + "::" + method + "::" + result + "\n";
-                            out.write(returnMessage.getBytes());
-                        } catch (IOException e) {
+                            Object ret = null;
+                            Method m = objClass.getMethod(method, argTypes);
+                            m.setAccessible(true);
+                            ret = m.invoke(obj, args);
+                            if (ret == null) {
+                                result = "void";
+                            } else {
+                                result = ret.toString();
+                            }
+                        } catch (InvocationTargetException e) {
+                            result = "exc::" + e.getTargetException().getClass().getName() + "::"
+                                    + e.getTargetException().getMessage();
+                        } catch (Exception e) {
                             if (DEBUG)
                                 System.err.println("[!!!] Some problem with socket connection to '" + host + ":" + port
                                         + "'.");
+                            result = "exc::" + MiddlewareException.class.getName()
+                                    + "::This is not your fault, Will Hunting!";
                         } finally {
                             try {
+                                String returnMessage = "return::" + name + "::" + method + "::" + result + "\n";
+                                OutputStream out = sck.getOutputStream();
+                                out.write(returnMessage.getBytes());
                                 sck.close();
                             } catch (IOException e) {
                                 if (DEBUG)
@@ -214,7 +209,8 @@ public class Communicator extends NameService implements Runnable {
                 };
                 para.start();
             } catch (IOException e) {
-                if (DEBUG) System.err.println("[!!!] Accepting request failed: '" + e.getLocalizedMessage() + "'.");
+                if (DEBUG)
+                    System.err.println("[!!!] Accepting request failed: '" + e.getLocalizedMessage() + "'.");
             }
         }
     }
