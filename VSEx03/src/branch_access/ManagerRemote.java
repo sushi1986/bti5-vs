@@ -1,5 +1,11 @@
 package branch_access;
 
+/**
+ * VSP Lab03
+ * @date 23.11.2012
+ * @author Phillip Gesien, Raphael Hiesgen
+ */
+
 import mware_lib.Communicator;
 import mware_lib.ObjectBroker;
 

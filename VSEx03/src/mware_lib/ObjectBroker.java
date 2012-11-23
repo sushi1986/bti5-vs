@@ -1,5 +1,11 @@
 package mware_lib;
 
+/**
+ * VSP Lab03
+ * @date 23.11.2012
+ * @author Phillip Gesien, Raphael Hiesgen
+ */
+
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

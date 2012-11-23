@@ -1,5 +1,11 @@
 package mware_lib;
 
+/**
+ * VSP Lab03
+ * @date 23.11.2012
+ * @author Phillip Gesien, Raphael Hiesgen
+ */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

@@ -1,5 +1,11 @@
 package nameserver;
 
+/**
+ * VSP Lab03
+ * @date 23.11.2012
+ * @author Phillip Gesien, Raphael Hiesgen
+ */
+
 public class Info {
 	String name;
 	int port;
