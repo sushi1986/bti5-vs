@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -169,7 +170,9 @@ public class Communicator extends NameService implements Runnable {
                             String result = null;
                             Object ret = null;
                             try {
-                                ret = objClass.getMethod(method, argTypes).invoke(obj, args);
+                            	Method m = objClass.getMethod(method, argTypes);
+                            	m.setAccessible(true);
+                                ret = m.invoke(obj, args);
                                 if (ret == null) {
                                     result = "void";
                                 } else {

@@ -1,0 +1,34 @@
+Log Geldautomat:
+
+NameService is now running on port: 60509
+Account resolved.
+bal:2201.0
+bal...
+depo...
+...depo
+...bal
+neg numbers check 1 ok
+neg numbers check 2 ok
+'dpE-2313' class java.lang.RuntimeException
+'wdE-2313' class java.lang.RuntimeException
+'ovdE-2313' class cash_access.OverdraftException
+
+
+
+Log Filiale:
+
+NameService is now running on port: 50836
+Bank resolved.
+Account created 2425
+Magic key is 94.0
+class java.lang.RuntimeException dbsv8
+
+
+
+Log Bank:
+
+Rebind NDEA...NameService is now running on port: 19630
+Done.
+Press ENTER to exit application...
+
+
