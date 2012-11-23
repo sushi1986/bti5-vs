@@ -1,16 +1,18 @@
 package branch_access;
 
-import mware_lib.NameServiceImpl;
+import mware_lib.Communicator;
 import mware_lib.ObjectBroker;
 
 public class ManagerRemote extends Manager {
 
-    NameServiceImpl ns;
+    private final boolean DEBUG = false;
+    
+    Communicator ns;
     String name;
 
     public ManagerRemote(String name, String serviceHost, int listenPort) {
         ObjectBroker ob = ObjectBroker.getBroker(serviceHost, listenPort);
-        this.ns = (NameServiceImpl) ob.getNameService();
+        this.ns = (Communicator) ob.getNameService();
         this.name = name;
     }
 
@@ -22,12 +24,12 @@ public class ManagerRemote extends Manager {
             String[] parts = result.split("::");
             String excName = parts[1];
             String excArgument = parts[2];
-            System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            if (DEBUG) System.out.println("[DBG] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
             Exception exc = null;
             try {
                 exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class }).newInstance(excArgument);
             } catch (Exception e) {
-                e.printStackTrace();
+                if (DEBUG) System.err.println("[!!!] Problem creating exception '" + excName +"'.");
                 return null;
             }
             if(exc instanceof RuntimeException) {
@@ -36,7 +38,7 @@ public class ManagerRemote extends Manager {
                 return null;
             }
         }
-        System.out.println(result);
+        if (DEBUG) System.out.println("[DBG] CreatAccount result: '"+ result +"'.");
         if (result != null) {
             return result;
         } else {
@@ -52,12 +54,12 @@ public class ManagerRemote extends Manager {
             String[] parts = result.split("::");
             String excName = parts[1];
             String excArgument = parts[2];
-            System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            if (DEBUG) System.out.println("[DBG] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
             Exception exc = null;
             try {
                 exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class }).newInstance(excArgument);
             } catch (Exception e) {
-                e.printStackTrace();
+                if (DEBUG) System.err.println("[!!!] Problem creating exception '" + excName +"'.");
                 return -1;
             }
             if(exc instanceof RuntimeException) {

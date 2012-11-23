@@ -1,17 +1,19 @@
 package cash_access;
 
-import mware_lib.NameServiceImpl;
+import mware_lib.Communicator;
 import mware_lib.ObjectBroker;
 
 public class AccountRemote extends Account {
 
-    NameServiceImpl ns;
+    private final boolean DEBUG = false;
+
+    Communicator ns;
     String name;
 
     public AccountRemote(String name, String serviceHost, int listenPort) {
         this.name = name;
         ObjectBroker ob = ObjectBroker.getBroker(serviceHost, listenPort);
-        this.ns = (NameServiceImpl) ob.getNameService();
+        this.ns = (Communicator) ob.getNameService();
     }
 
     @Override
@@ -22,25 +24,24 @@ public class AccountRemote extends Account {
             String[] parts = result.split("::");
             String excName = parts[1];
             String excArgument = parts[2];
-            System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            if (DEBUG)
+                System.out.println("[DBG] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
             Exception exc = null;
             try {
-                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class }).newInstance(excArgument);
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class })
+                        .newInstance(excArgument);
             } catch (Exception e) {
-                e.printStackTrace();
+                if (DEBUG)
+                    System.err.println("[!!!] Problem creating exception '" + excName + "'.");
                 return;
             }
-            if(exc instanceof RuntimeException) {
+            if (exc instanceof RuntimeException) {
                 throw (RuntimeException) exc;
             } else {
                 return;
             }
         }
-        if (result.equals("void")) {
-            return;
-        } else {
-            System.out.println("[!!!] Error ... in deposit.");
-        }
+        return;
     }
 
     @Override
@@ -51,36 +52,48 @@ public class AccountRemote extends Account {
             String[] parts = result.split("::");
             String excName = parts[1];
             String excArgument = parts[2];
-            System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            if (DEBUG)
+                System.out.println("[DBG] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
             Exception exc = null;
             try {
-                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class }).newInstance(excArgument);
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class })
+                        .newInstance(excArgument);
             } catch (Exception e) {
-                e.printStackTrace();
+                if (DEBUG)
+                    System.err.println("[!!!] Problem creating exception '" + excName + "'.");
                 return;
             }
-            if(exc instanceof RuntimeException) {
+            if (exc instanceof RuntimeException) {
                 throw (RuntimeException) exc;
             } else if (exc instanceof OverdraftException) {
                 throw (OverdraftException) exc;
-            }else {
+            } else {
                 return;
             }
         }
-        if (result.equals("void")) {
-            return;
-        } else {
-            System.out.println("[!!!] Error ... in withdraw.");
-        }
+        return;
     }
 
     @Override
     public double getBalance() {
         String result = null;
-        try {
-            result = ns.callOnResolved(name, "getBalance");
-        } catch (Exception exc) {
-            if(exc instanceof RuntimeException) {
+        result = ns.callOnResolved(name, "getBalance");
+        if (result != null && result.startsWith("exc")) {
+            String[] parts = result.split("::");
+            String excName = parts[1];
+            String excArgument = parts[2];
+            if (DEBUG)
+                System.out.println("[DBG] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            Exception exc = null;
+            try {
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class })
+                        .newInstance(excArgument);
+            } catch (Exception e) {
+                if (DEBUG)
+                    System.err.println("[!!!] Problem creating exception '" + excName + "'.");
+                return -1;
+            }
+            if (exc instanceof RuntimeException) {
                 throw (RuntimeException) exc;
             } else {
                 return -1;
