@@ -17,9 +17,19 @@ public class AccountRemote extends Account {
     @Override
     public void deposit(double amount) {
         String result = null;
-        try {
-            result = ns.callOnResolved(name, "deposit", String.valueOf(amount));
-        } catch (Exception exc) {
+        result = ns.callOnResolved(name, "deposit", String.valueOf(amount));
+        if (result != null && result.startsWith("exc")) {
+            String[] parts = result.split("::");
+            String excName = parts[1];
+            String excArgument = parts[2];
+            System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            Exception exc = null;
+            try {
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class }).newInstance(excArgument);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
             if(exc instanceof RuntimeException) {
                 throw (RuntimeException) exc;
             } else {
@@ -36,14 +46,24 @@ public class AccountRemote extends Account {
     @Override
     public void withdraw(double amount) throws OverdraftException {
         String result = null;
-        try {
-            result = ns.callOnResolved(name, "withdraw", String.valueOf(amount));
-        } catch (Exception exc) {
+        result = ns.callOnResolved(name, "withdraw", String.valueOf(amount));
+        if (result != null && result.startsWith("exc")) {
+            String[] parts = result.split("::");
+            String excName = parts[1];
+            String excArgument = parts[2];
+            System.out.println("[!!!] throwing exception: '" + excName + "' with argument '" + excArgument + "'.");
+            Exception exc = null;
+            try {
+                exc = (Exception) Class.forName(excName).getConstructor(new Class<?>[] { String.class }).newInstance(excArgument);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
             if(exc instanceof RuntimeException) {
                 throw (RuntimeException) exc;
             } else if (exc instanceof OverdraftException) {
                 throw (OverdraftException) exc;
-            } else {
+            }else {
                 return;
             }
         }
