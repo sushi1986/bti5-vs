@@ -21,6 +21,7 @@ public class ReceiveThread extends Thread {
 
 	@Override
 	public void run() {
+	    System.out.println("Receive Thread now running.");
 		byte[] buffer = new byte[1024];
 		while (!isInterrupted()) {
 
@@ -29,16 +30,16 @@ public class ReceiveThread extends Thread {
 			try {
 				mSck.receive(dp);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
+			System.out.println("Received packet:");
 			System.out.write(dp.getData(),0,dp.getData().length);
+			System.out.println("");
 			System.out.write(buffer,0,buffer.length);
-
+			System.out.println("\n");
 			// validiere
-
 		}
-
+		mSck.close();
 	}
 }

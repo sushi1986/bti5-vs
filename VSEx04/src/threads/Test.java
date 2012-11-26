@@ -7,42 +7,33 @@ import java.net.MulticastSocket;
 
 public class Test {
 
-	/**
-	 * @param args
-	 * @throws InterruptedException
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws InterruptedException,
-			IOException {
-		ReceiveThread rt = new ReceiveThread("225.10.1.2", 15000);
-		rt.start();
+    /**
+     * @param args
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    public static void main(String[] args) throws InterruptedException, IOException {
+        System.out.println("Starting main for sending");
+        MulticastSocket mSck = new MulticastSocket();
+        byte[] buffer = new byte[10];
+        for (int i = 0; i < buffer.length; i++) {
+            buffer[i] = (byte) (i + 48);
+        }
+        DatagramPacket dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("225.10.1.2"), 15000);
+        String tmp = new String(dp.getData());
+        System.out.println("Now sending datagram with:\nto: " + dp.getAddress() + ":" + dp.getPort() + "\ncontains: "
+                + tmp);
+        mSck.send(dp);
+        Thread.sleep(1000);
 
-		MulticastSocket mSck = new MulticastSocket();
-		byte[] buffer = new byte[10];
-
-		Thread.sleep(1000);
-
-		for (int i = 0; i < buffer.length; i++) {
-			buffer[i] = (byte) i;
-		}
-
-		DatagramPacket dp = new DatagramPacket(buffer, buffer.length,
-				InetAddress.getByName("225.10.1.2"), 15000);
-		mSck.send(dp);
-
-		Thread.sleep(1000);
-
-		for (int i = 0; i < buffer.length; i++) {
-			buffer[i] = (byte) (10 - i);
-		}
-
-		dp = new DatagramPacket(buffer, buffer.length,
-				InetAddress.getByName("225.10.1.2"), 15000);
-		mSck.send(dp);
-
-		Thread.sleep(1000);
-		
-		rt.interrupt();
-	}
-
+        for (int i = 0; i < buffer.length; i++) {
+            buffer[i] = (byte) (57 - i);
+        }
+        dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("225.10.1.2"), 15000);
+        mSck.send(dp);
+        tmp = new String(dp.getData());
+        System.out.println("Now sending datagram with:\nto: " + dp.getAddress() + ":" + dp.getPort() + "\ncontains: "
+                + tmp);
+        Thread.sleep(1000);
+    }
 }
