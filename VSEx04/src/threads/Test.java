@@ -17,7 +17,7 @@ public class Test {
         MulticastSocket mSck = new MulticastSocket();
         byte[] buffer = new byte[10];
         for (int i = 0; i < buffer.length; i++) {
-            buffer[i] = (byte) (i + 48);
+            buffer[i] = (byte) (i + 'a');
         }
         DatagramPacket dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("225.10.1.2"), 15000);
         String tmp = new String(dp.getData());
@@ -27,7 +27,7 @@ public class Test {
         Thread.sleep(1000);
 
         for (int i = 0; i < buffer.length; i++) {
-            buffer[i] = (byte) (57 - i);
+            buffer[i] = (byte) ('j' - i);
         }
         dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("225.10.1.2"), 15000);
         mSck.send(dp);
