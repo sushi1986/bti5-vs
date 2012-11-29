@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 
 public class Test {
 
@@ -13,6 +14,7 @@ public class Test {
      * @throws IOException
      */
     public static void main(String[] args) throws InterruptedException, IOException {
+    	
         System.out.println("Starting main for sending");
         MulticastSocket mSck = new MulticastSocket();
         byte[] buffer = new byte[10];
