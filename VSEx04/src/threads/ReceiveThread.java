@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class ReceiveThread extends Thread {
 
@@ -14,8 +13,8 @@ public class ReceiveThread extends Thread {
 
 	MulticastSocket mSck;
 
-	public ReceiveThread(String group, int port) {
-		receivedMsgs = new LinkedBlockingQueue<Message>();
+	public ReceiveThread(BlockingQueue<Message> rcvMsgs, String group, int port) {
+		this.receivedMsgs = rcvMsgs;
 
 		try {
 			mSck = new MulticastSocket(port);

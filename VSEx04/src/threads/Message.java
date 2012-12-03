@@ -1,13 +1,9 @@
 package threads;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 
 public class Message {
 
@@ -80,6 +76,26 @@ public class Message {
 			e.printStackTrace();
 		}
 		return baos.toByteArray();
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public String getSender() {
+		return sender;
+	}
+
+	public byte getNextSlot() {
+		return nextSlot;
+	}
+
+	public long getTimeStamp() {
+		return timeStamp;
+	}
+
+	public long getOurTimestamp() {
+		return ourTimestamp;
 	}
 
 	@Override

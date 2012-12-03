@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class SendThread extends Thread {
 	private BlockingQueue<Message> msgsToSend;
@@ -15,8 +14,8 @@ public class SendThread extends Thread {
 	private String group;
 	private int port;
 
-	public SendThread(String group, int port) {
-		msgsToSend = new LinkedBlockingQueue<Message>();
+	public SendThread(BlockingQueue<Message> sndMsgs, String group, int port) {
+		this.msgsToSend = sndMsgs;
 
 		try {
 			mSck = new MulticastSocket();

@@ -1,13 +1,12 @@
 package work;
 
 public class TimeSlot {
-	private int team;
+	private Team team;
 	private long eta;
 	private long ata;
 	
-	public TimeSlot(int team, long eta) {
-		this.team = team;
-		this.eta = eta;
+	public TimeSlot() {
+		
 	}
 
 	public long getAta() {
@@ -18,11 +17,15 @@ public class TimeSlot {
 		this.ata = ata;
 	}
 
-	public int getTeam() {
+	public Team getTeam() {
 		return team;
 	}
 
 	public long getEta() {
 		return eta;
+	}
+
+	public void setTeam(Team team) {
+		this.team = team;
 	}
 }
