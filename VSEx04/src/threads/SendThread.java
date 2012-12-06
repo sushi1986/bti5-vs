@@ -45,9 +45,9 @@ public class SendThread extends Thread {
 					dp = new DatagramPacket(buffer, buffer.length,
 							InetAddress.getByName("225.10.1.2"), 15000);
 
-					System.out.println("[ST] Now sending datagram with:\nto: "
-							+ dp.getAddress() + ":" + dp.getPort()
-							+ "\ncontains: " + m);
+//					System.out.println("[ST] Now sending datagram with:\nto: "
+//							+ dp.getAddress() + ":" + dp.getPort()
+//							+ "\ncontains: " + m);
 					mSck.send(dp);
 				} catch (UnknownHostException e) {
 					e.printStackTrace();
