@@ -1,7 +1,7 @@
 package work;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.BlockingQueue;
 
 import threads.Message;
 
@@ -23,8 +23,7 @@ public class Worker extends Thread {
 
 	public Worker(BlockingQueue<Message> incoming,
 			BlockingQueue<Message> outgoing, String self) {
-		currentSlot = 0; // falls wir der erste sind, dann geben wir die zeit
-							// vor
+		currentSlot = 0;
 		this.self = self;
 		this.incoming = incoming;
 		this.outgoing = outgoing;
@@ -34,15 +33,20 @@ public class Worker extends Thread {
 
 	public void incCurrentSlot() {
 		this.currentSlot = (currentSlot + 1) % NUMBER_OF_SLOTS;
+		if (currentSlot == 0) {
+			current = future;
+			future = new TimeSlot[NUMBER_OF_SLOTS];
+		}
 	}
 
 	@Override
 	public void run() {
+
 		Message msg = null;
 		boolean synced = false;
 		boolean silence = true;
 		long startingTime = System.currentTimeMillis();
-		// hier mit anderen auf zeit synchen
+
 		while (!synced && !isInterrupted()) {
 			try {
 				msg = incoming.poll(10, TimeUnit.MILLISECONDS);
@@ -52,67 +56,54 @@ public class Worker extends Thread {
 			if (msg != null) {
 
 				silence = false;
-				System.out.println("[WORKER] "+msg.toString());
-				if (msg.getSender().equals(self)) {
+				System.out.println("[WORKER][sync]" + "Slot is: " + currentSlot
+						+ "; " + msg.toString());
 
+				TimeSlot tmp = new TimeSlot();
+				tmp.setTeam(msg.getSender());
+				tmp.setSlot(msg.getNextSlot());
+				
+				TimeSlot found = lookForTimeSlotWithTeam(msg);
+				if (found == null) {
+					current[msg.getNextSlot()] = tmp;
 				} else {
+					synced = true;
+					currentSlot = found.getSlot();
 
-					TimeSlot tmp = new TimeSlot();//
-					tmp.setTeam(msg.getSender());
-					tmp.setSlot(msg.getNextSlot()); // damit wir beim naechsten
-													// mal wissen wo wir denn
-													// sind
-					// long eta =
-					// wenn sender schon einmal gesendet hat, dann kennen wir
-					// den actualSlot
-					TimeSlot found = lookForTimeSlotWithTeam(msg);
-
-					// tmp.setEta(eta)
-
-					if (found == null/* suche fehlgesschlagen */) {
-						current[msg.getNextSlot()] = tmp;
-					} else {
-						// dann haben wir das Wissen um uns zu orientieren.
-						synced = true;
-
-						currentSlot = found.getSlot();
-
-						long eta = (NUMBER_OF_SLOTS - found.getSlot() + msg
-								.getNextSlot()) * SLOT_LENGTH;
-						tmp.setEta(eta);
-
-						for (int i = 0; i < tmp.getSlot(); i++) {
-							future[i] = current[i];
-						}
-
-						future[msg.getNextSlot()] = tmp;
-						// TODO EVtl fehler wegen kopieren von index...
-
+					long eta = (NUMBER_OF_SLOTS - found.getSlot() + msg
+							.getNextSlot()) * SLOT_LENGTH;
+					tmp.setEta(eta);
+					for (int i = 0; i < tmp.getSlot(); i++) {
+						future[i] = current[i];
 					}
+					future[msg.getNextSlot()] = tmp;
+					// TODO EVtl fehler wegen kopieren von index...
 				}
-			} else {
-
 			}
 
 			if (silence
-					&& ((System.currentTimeMillis() - startingTime) >= 2000)) { // 2x
-																				// Frame-time
+					&& ((System.currentTimeMillis() - startingTime) >= 2000)) {
 				synced = true;
 				// TODO eigenen Slot eintragen
-				
 				System.out.println("I'm alone....");
+				// TODO be the first to send
 			}
 		}
 		System.out.println("Worker synchronized, now ...");
-		
+
 		long beginOfNextSlot = msg.getOurTimestamp() + 50;
-		
-		boolean receivedMessage = false;
+
+		boolean sending = false;
 		boolean sentMessage = false;
-		// normaler run loop
+		boolean receivedMessage = false;
 		while (!isInterrupted()) {
 			try {
 				msg = incoming.poll(10, TimeUnit.MILLISECONDS);
+				if (msg != null && msg.getSender().startsWith(self)) {
+					System.out.println("[WORKER][OWN_MESSAGE] " + currentSlot
+							+ " -> " + msg.toString());
+					msg = null;
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -124,22 +115,58 @@ public class Worker extends Thread {
 				beginOfNextSlot += 50;
 				receivedMessage = false;
 				sentMessage = false;
+				if (!sending) {
+					// find send slot
+					byte slot = findFreeSlotFrom(currentSlot + 1, current);
+					if (slot >= 0) {
+						TimeSlot tmp = new TimeSlot();
+						tmp.setEta(slot * SLOT_LENGTH + (beginOfNextSlot - 50));
+						tmp.setSlot(slot);
+						tmp.setTeam(self);
+						current[slot] = tmp;
+						sending = true;
+					}
+				}
 			}
 			if (msg != null) {
-				System.out.println(msg.toString());
+				System.out.println("[WORKER]" + "Slot is: " + currentSlot
+						+ "; " + msg.toString());
+				future[msg.getNextSlot()] = new TimeSlot();
+				future[msg.getNextSlot()].setTeam(msg.getSender());
 			} else {
 				// System.out.println("msg!");
 			}
-			if(!sentMessage && current[currentSlot] != null && current[currentSlot].getTeam().equals(self)) {
-				byte nextSlot = 0;
-				// TODO calculate next slot
-				outgoing.add(new Message(new byte[]{0}, self, nextSlot, System.currentTimeMillis()));
-				sentMessage = true;
+			if (!sentMessage && current[currentSlot] != null
+					&& current[currentSlot].getTeam().startsWith(self)) {
+				byte nextSlot = findFreeSlotFrom(0, future);
+				if (nextSlot == -1) {
+					System.err.println("NO FREE SLOT AVAILABLE");
+					sending = false;
+				} else {
+					outgoing.add(new Message(new byte[] { 0 }, self, nextSlot,
+							System.currentTimeMillis()));
+					sentMessage = true;
+					future[nextSlot] = new TimeSlot();
+					future[nextSlot].setEta(FRAME_LENGTH - currentSlot
+							* SLOT_LENGTH + nextSlot * SLOT_LENGTH
+							+ beginOfNextSlot - 50);
+					future[nextSlot].setSlot(nextSlot);
+					future[nextSlot].setTeam(self);
+				}
 			}
-			if(sentMessage && receivedMessage) {
+			if (sentMessage && receivedMessage) {
 				// TODO resolve conflict
 			}
 		}
+	}
+
+	private byte findFreeSlotFrom(int start, TimeSlot[] slots) {
+		for (byte i = 0; i < slots.length; i++) {
+			if (slots[i] == null) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	private TimeSlot lookForTimeSlotWithTeam(Message msg) {
