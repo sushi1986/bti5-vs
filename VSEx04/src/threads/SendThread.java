@@ -43,7 +43,7 @@ public class SendThread extends Thread {
 				DatagramPacket dp = null;
 				try {
 					dp = new DatagramPacket(buffer, buffer.length,
-							InetAddress.getByName("225.10.1.2"), 15000);
+							InetAddress.getByName(group), port);
 
 //					System.out.println("[ST] Now sending datagram with:\nto: "
 //							+ dp.getAddress() + ":" + dp.getPort()

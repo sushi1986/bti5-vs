@@ -42,7 +42,7 @@ public class Test {
 		};
 
 		Timer b = new Timer(true); // true f�r DAEMON
-		b.schedule(a, 500, 1000);
+//		b.schedule(a, 500, 1000);
 
 		try {
 			s.join();

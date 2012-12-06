@@ -27,7 +27,7 @@ public class Worker extends Thread {
 							// vor
 		this.self = self;
 		this.incoming = incoming;
-		this.incoming = outgoing;
+		this.outgoing = outgoing;
 		current = new TimeSlot[NUMBER_OF_SLOTS];
 		future = new TimeSlot[NUMBER_OF_SLOTS];
 	}

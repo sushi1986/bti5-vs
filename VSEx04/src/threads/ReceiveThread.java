@@ -39,11 +39,11 @@ public class ReceiveThread extends Thread {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Message m = new Message(Arrays.copyOfRange(buffer, 0, 32));
+			Message m = new Message(Arrays.copyOfRange(buffer, 0, 33));
 
-			System.out.print("[RT]Received packet:\nfrom: " + dp.getAddress()
-					+ ":" + dp.getPort() + "\ncontains: ");
-			System.out.println(m);
+//			System.out.print("[RT]Received packet:\nfrom: " + dp.getAddress()
+//					+ ":" + dp.getPort() + "\ncontains: ");
+//			System.out.println(m);
 			
 			try {
 				receivedMsgs.put(m);

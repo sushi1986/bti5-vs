@@ -26,9 +26,9 @@ public class Message {
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
 		this(data, sender, nextSlot);
 		long tmp = 0;
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < longValue.length; i++) {
 			tmp <<= 8;
-			tmp ^= (long) longValue[i] & 0xFF;
+			tmp |=  (longValue[i] & 0xFF);
 		}
 		timeStamp = tmp;
 	}
@@ -38,16 +38,15 @@ public class Message {
 	}
 
 	public Message(byte[] input) {
-		this(Arrays.copyOfRange(input, 10, 23), new String(Arrays.copyOfRange(
-				input, 0, 9)), input[24], Arrays.copyOfRange(input, 25, 32));
-
+		this(Arrays.copyOfRange(input, 10, 24), new String(Arrays.copyOfRange(
+				input, 0, 10)), input[24], Arrays.copyOfRange(input, 25, 33));
 	}
 
 	public byte[] getBytes() {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(33);
 		DataOutputStream dis = new DataOutputStream(baos);
-		String glub = String.format("%-5s", sender);
+		String glub = String.format("%-10s", sender);
 
 		if (data.length != 14) {
 			byte[] tmp = new byte[14];
@@ -59,7 +58,7 @@ public class Message {
 					tmp[i] = data[i];
 				}
 			}
-			if (i < tmp.length) {
+			if (++i < tmp.length) {
 				for (; i < tmp.length; i++) {
 					tmp[i] = 0;
 				}
