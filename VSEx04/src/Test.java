@@ -1,5 +1,3 @@
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -27,22 +25,6 @@ public class Test {
 		s.start();
 		r.start();
 		t.start();
-		
-		TimerTask a = new TimerTask() {
-
-			@Override
-			public void run() {
-				try {
-					s.getMsgsToSend().put(new Message(new byte[]{1,2,3,4,5,6,7,8,9,0,1,2,3,4}, "me", (byte) 2, System.currentTimeMillis()));
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		};
-
-		Timer b = new Timer(true); // true f�r DAEMON
-//		b.schedule(a, 500, 1000);
 
 		try {
 			s.join();

@@ -27,7 +27,7 @@ public class ReceiveThread extends Thread {
 
 	@Override
 	public void run() {
-		System.out.println("[RT]Receive Thread now running.");
+		System.out.println("[RT] Receive thread running.");
 		byte[] buffer = new byte[1024];
 
 		while (!isInterrupted()) {
@@ -41,9 +41,9 @@ public class ReceiveThread extends Thread {
 			}
 			Message m = new Message(Arrays.copyOfRange(buffer, 0, 33));
 
-//			System.out.print("[RT]Received packet:\nfrom: " + dp.getAddress()
-//					+ ":" + dp.getPort() + "\ncontains: ");
-//			System.out.println(m);
+			System.out.print("[RT]Received packet:\nfrom: " + dp.getAddress()
+					+ ":" + dp.getPort() + "\ncontains: ");
+			System.out.println(m);
 			
 			try {
 				receivedMsgs.put(m);

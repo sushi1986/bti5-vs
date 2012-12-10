@@ -8,59 +8,64 @@ import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 
 public class SendThread extends Thread {
-	private BlockingQueue<Message> msgsToSend;
-	private MulticastSocket mSck;
+    private BlockingQueue<Message> msgsToSend;
+    private MulticastSocket mSck;
 
-	private String group;
-	private int port;
+    private String group;
+    private int port;
 
-	public SendThread(BlockingQueue<Message> sndMsgs, String group, int port) {
-		this.msgsToSend = sndMsgs;
+    public SendThread(BlockingQueue<Message> sndMsgs, String group, int port) {
+        this.msgsToSend = sndMsgs;
 
-		try {
-			mSck = new MulticastSocket();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.group = group;
-		this.port = port;
-	}
+        try {
+            mSck = new MulticastSocket();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.group = group;
+        this.port = port;
+    }
 
-	@Override
-	public void run() {
-		Message m = null;
-		while (!isInterrupted()) {
-			try {
-				m = msgsToSend.take();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+    @Override
+    public void run() {
+        System.out.println("[RT] Send thread running.");
+        Message m = null;
+        while (!isInterrupted()) {
+            try {
+                m = msgsToSend.take();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-			if (m == null) {
-				System.out.println("[ST] Error take = null");
-			} else {
-				byte[] buffer = m.getBytes();
-				DatagramPacket dp = null;
-				try {
-					dp = new DatagramPacket(buffer, buffer.length,
-							InetAddress.getByName(group), port);
+            if (m == null) {
+                System.out.println("[ST] Error take = null");
+            }
+            else {
+                byte[] buffer = m.getBytes();
+                DatagramPacket dp = null;
+                try {
+                    dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(group), port);
 
-//					System.out.println("[ST] Now sending datagram with:\nto: "
-//							+ dp.getAddress() + ":" + dp.getPort()
-//							+ "\ncontains: " + m);
-					mSck.send(dp);
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+//                    System.out.println("[ST] Now sending datagram with:\nto: " + dp.getAddress() + ":" + dp.getPort()
+//                            + "\ncontains: " + m);
 
-		}
-	}
+                    mSck.send(dp);
+                }
+                catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
-	public BlockingQueue<Message> getMsgsToSend() {
-		return msgsToSend;
-	}
+        }
+    }
+
+    public BlockingQueue<Message> getMsgsToSend() {
+        return msgsToSend;
+    }
 
 }
