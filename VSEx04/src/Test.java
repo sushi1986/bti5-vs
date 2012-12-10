@@ -22,11 +22,11 @@ public class Test {
 		
 		final SendThread s = new SendThread(sndMsgs, GROUP, port);
 		ReceiveThread r = new ReceiveThread(rcvMsgs, GROUP, port);
-		Thread t = new Worker(r.getReceivedMsgs(), s.getMsgsToSend(), TEAM);
+//		Thread t = new Worker(r.getReceivedMsgs(), s.getMsgsToSend(), TEAM);
 
 		s.start();
 		r.start();
-		t.start();
+//		t.start();
 		
 		TimerTask a = new TimerTask() {
 
@@ -47,7 +47,7 @@ public class Test {
 		try {
 			s.join();
 			r.join();
-			t.join();
+//			t.join();
 		} catch (Exception exc) {
 			System.out.println("blub");
 		}
