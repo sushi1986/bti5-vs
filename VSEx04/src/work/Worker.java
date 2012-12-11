@@ -40,7 +40,7 @@ public class Worker extends Thread {
 
     private boolean insertMessageIntoSlot(Message msg, TimeSlot[] into) {
         if (into[msg.getNextSlot()] != null) {
-            System.out.println("[WORKER] Slot is already in use: " + into[msg.getNextSlot()].toString());
+            System.out.println("[WORKER] Slot is already in use by team '" + into[msg.getNextSlot()].getTeam()+"' - conflic with '" + msg.getSender() +"'");
             return false;
         }
         else {
@@ -54,14 +54,6 @@ public class Worker extends Thread {
         }
     }
 
-    private boolean insertMessageIntoSlot(Message msg, TimeSlot[] into, long eta) {
-        if (!insertMessageIntoSlot(msg, into)) {
-            return false;
-        }
-        into[msg.getNextSlot()].setEta(eta);
-        return true;
-    }
-
     private void insertTimeSlot(TimeSlot[] into, byte slot, long eta, String team) {
         TimeSlot tmp = new TimeSlot();
         tmp.setEta(eta);
@@ -70,7 +62,6 @@ public class Worker extends Thread {
         into[slot] = tmp;
     }
 
-    // TODO: does the return value have to be greater then start
     private byte findFreeSlotFromIndexIn(int start, TimeSlot[] slots, boolean random) {
         if (!random) {
             for (byte i = (byte) start; i < slots.length; i++) {
@@ -141,9 +132,6 @@ public class Worker extends Thread {
                 else {
                     synced = true;
                     currentSlot = found.getSlot();
-
-                    long eta = (NUMBER_OF_SLOTS - found.getSlot() + msg.getNextSlot()) * SLOT_LENGTH;
-                    tmp.setEta(eta);
                     for (int i = 0; i < tmp.getSlot(); i++) {
                         future[i] = current[i];
                     }
@@ -163,7 +151,7 @@ public class Worker extends Thread {
             System.out.println("[Worker] I'm alone....");
         }
         else {
-            beginOfNextSlot = msg.getOurTimestamp() + 25; // was 50
+            beginOfNextSlot = msg.getOurTimestamp() + 25;
             System.out.println("[Worker] Worker synchronized, now ...");
         }
 
@@ -222,9 +210,7 @@ public class Worker extends Thread {
                             }
                             else {
                                 Message tmp = new Message(new byte[] { 0 }, self, nextSlot, Message.generateTimeStamp());
-                                long eta = (FRAME_LENGTH - currentSlot * SLOT_LENGTH + nextSlot * SLOT_LENGTH
-                                        + beginOfNextSlot - 50);
-                                if (insertMessageIntoSlot(tmp, future, eta)) {
+                                if (insertMessageIntoSlot(tmp, future)) {
                                     outgoing.add(tmp);
                                     sentMessage = true;
                                 }
