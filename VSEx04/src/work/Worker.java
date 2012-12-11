@@ -40,7 +40,7 @@ public class Worker extends Thread {
 
     private boolean insertMessageIntoSlot(Message msg, TimeSlot[] into) {
         if (into[msg.getNextSlot()] != null) {
-            System.out.println("[WORKER] Slot is already in use by team '" + into[msg.getNextSlot()].getTeam()+"' - conflic with '" + msg.getSender() +"'");
+            System.out.printf("[WORKER][main][%2d] Slot is already in use by team '%s', conflic with '%s'\n", currentSlot, into[msg.getNextSlot()].getTeam(), msg.getSender());
             return false;
         }
         else {
