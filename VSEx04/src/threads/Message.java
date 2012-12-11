@@ -87,13 +87,19 @@ public class Message {
 			data = tmp;
 		}
 		
-		bb.putLong(timeStamp);
+		byte[] ba = new byte[8];
+		for (int i = 0; i < ba.length; i++) {
+			long x = (0xFF00000000000000L >> i * 8);
+			long t = (timeStamp & x);
+			ba[i] = (byte) ( t >> (64-(i+1)*8));//  56);
 
+		}
+		
 		try {
 			dis.writeBytes(glub);
 			dis.write(data);
 			dis.writeByte(nextSlot);
-			dis.write(bb.array());
+			dis.write(ba);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
