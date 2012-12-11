@@ -48,8 +48,8 @@ public class SendThread extends Thread {
                 try {
                     dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(group), port);
 
-//                    System.out.println("[ST] Now sending datagram with:\nto: " + dp.getAddress() + ":" + dp.getPort()
-//                            + "\ncontains: " + m);
+//                    System.out.println("[ST] Sending (" + dp.getAddress() + ":" + dp.getPort()+") " + m.toString());
+                    
 
                     mSck.send(dp);
                 }
