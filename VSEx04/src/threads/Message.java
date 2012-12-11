@@ -3,7 +3,12 @@ package threads;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
 import java.util.Arrays;
+
+import javax.security.auth.callback.LanguageCallback;
 
 public class Message {
 
@@ -25,12 +30,19 @@ public class Message {
 
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
 		this(data, sender, nextSlot);
-		long tmp = 0;
-		for (int i = 0; i < longValue.length; i++) {
-			tmp <<= 8;
-			tmp |=  (longValue[i] & 0xFF);
-		}
-		timeStamp = tmp;
+		
+		ByteBuffer bb = ByteBuffer.allocate(4);
+		bb.order(ByteOrder.BIG_ENDIAN);
+		bb.put(longValue);
+		timeStamp = bb.asLongBuffer().get();
+		
+//		
+//		long tmp = 0;
+//		for (int i = 0; i < longValue.length; i++) {
+//			tmp <<= 8;
+//			tmp |=  (longValue[i] & 0xFF);
+//		}
+//		timeStamp = tmp;
 	}
 
 	private Message(byte[] data, String sender, byte nextSlot) {
@@ -44,9 +56,15 @@ public class Message {
 
 	public byte[] getBytes() {
 
+		ByteBuffer bb = ByteBuffer.allocate(4);
+		bb.order(ByteOrder.BIG_ENDIAN);
+
+		String glub = String.format("%-10s", sender);
+
+		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(33);
 		DataOutputStream dis = new DataOutputStream(baos);
-		String glub = String.format("%-10s", sender);
+		
 
 		if (data.length != 14) {
 			byte[] tmp = new byte[14];
@@ -65,12 +83,14 @@ public class Message {
 			}
 			data = tmp;
 		}
+		
+		bb.putLong(timeStamp);
 
 		try {
 			dis.writeBytes(glub);
 			dis.write(data);
 			dis.writeByte(nextSlot);
-			dis.writeLong(timeStamp);
+			dis.write(bb.array());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
