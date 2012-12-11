@@ -43,7 +43,7 @@ public class ReceiveThread extends Thread {
             }
             Message m = new Message(Arrays.copyOfRange(buffer, 0, 33));
 
-            System.out.print("[RT]Received (" + dp.getAddress() + ":" + dp.getPort() + "): " + m.toString());
+//            System.out.println("[RT]Received (" + dp.getAddress() + ":" + dp.getPort() + "): " + m.toString());
 
             try {
                 receivedMsgs.put(m);

@@ -26,6 +26,8 @@ public class Worker extends Thread {
 
     private int currentSlot;
 
+
+    
     public Worker(BlockingQueue<Message> incoming, BlockingQueue<Message> outgoing, String self) {
         currentSlot = 0;
         this.self = self;
@@ -112,7 +114,7 @@ public class Worker extends Thread {
         Message msg = null;
         boolean synced = false;
         boolean silence = true;
-        long startingTime = System.currentTimeMillis();
+        long startingTime = Message.generateTimeStamp();
 
         boolean isFirst = false;
 
@@ -148,7 +150,7 @@ public class Worker extends Thread {
                     future[msg.getNextSlot()] = tmp;
                 }
             }
-            if (silence && ((System.currentTimeMillis() - startingTime) >= 2000)) {
+            if (silence && ((Message.generateTimeStamp() - startingTime) >= 2000)) {
                 synced = true;
                 isFirst = true;
             }
@@ -157,7 +159,7 @@ public class Worker extends Thread {
         long beginOfNextSlot = 0;
 
         if (isFirst) {
-            beginOfNextSlot = System.currentTimeMillis();
+            beginOfNextSlot = Message.generateTimeStamp();
             System.out.println("[Worker] I'm alone....");
         }
         else {
@@ -175,7 +177,7 @@ public class Worker extends Thread {
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (System.currentTimeMillis() >= beginOfNextSlot) {
+            if (Message.generateTimeStamp() >= beginOfNextSlot) {
                 currentSlot = (currentSlot + 1) % NUMBER_OF_SLOTS;
                 if (currentSlot == 0) {
                     current = future;
@@ -190,7 +192,8 @@ public class Worker extends Thread {
                         }
                     }
                     if (cnt > 0) {
-                        beginOfNextSlot -= (average /= cnt);
+                        beginOfNextSlot -= (average / cnt);
+                    	Message.adjustTime(-(average / cnt));
                     }
                 }
                 beginOfNextSlot += 50;
@@ -199,8 +202,10 @@ public class Worker extends Thread {
                 if (!sending) {
                     byte nextSlot = findFreeSlotFromIndexIn(currentSlot + 1, current, RANDOM);
                     if (nextSlot >= 0) {
-                        insertTimeSlot(future, nextSlot, (nextSlot * SLOT_LENGTH + (beginOfNextSlot - 50)), self);
-                        sending = true;
+//                        insertTimeSlot(future, nextSlot, (nextSlot * SLOT_LENGTH + (beginOfNextSlot - 50)), self);
+                        insertTimeSlot(current, nextSlot, (nextSlot * SLOT_LENGTH + (beginOfNextSlot - 50)), self);
+
+                    	sending = true;
                     }
                 }
             }
@@ -209,14 +214,14 @@ public class Worker extends Thread {
             if (msg == null) { // no message received, maybe i need to send
                 if (now != null) {
                     if (now.getTeam().startsWith(self)) { // i have to send
-                        if (!sentMessage && System.currentTimeMillis() >= (beginOfNextSlot - 30)) {
+                        if (!sentMessage && Message.generateTimeStamp() >= (beginOfNextSlot - 30)) {
                             byte nextSlot = findFreeSlotFromIndexIn(0, future, RANDOM);
                             if (nextSlot == -1) {
                                 sending = false;
                                 System.err.println("[Worker] No free slot available.");
                             }
                             else {
-                                Message tmp = new Message(new byte[] { 0 }, self, nextSlot, System.currentTimeMillis());
+                                Message tmp = new Message(new byte[] { 0 }, self, nextSlot, Message.generateTimeStamp());
                                 long eta = (FRAME_LENGTH - currentSlot * SLOT_LENGTH + nextSlot * SLOT_LENGTH
                                         + beginOfNextSlot - 50);
                                 if (insertMessageIntoSlot(tmp, future, eta)) {

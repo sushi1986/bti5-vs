@@ -18,31 +18,34 @@ public class Message {
 	private long timeStamp;
 
 	private long ourTimestamp;
-
+    private static long offset = 0;
+    public static void adjustTime(long offset) {
+		Message.offset += offset;
+	}
+    public static long generateTimeStamp(){
+    	return System.currentTimeMillis() + offset;
+    }
+    
 	public Message(byte[] data, String sender, byte nextSlot, long timeStamp) {
 		super();
 		this.data = data;
 		this.sender = sender;
 		this.nextSlot = nextSlot;
 		this.timeStamp = timeStamp;
-		this.ourTimestamp = System.currentTimeMillis();
+		this.ourTimestamp = generateTimeStamp();
 	}
 
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
 		this(data, sender, nextSlot);
 		
-		ByteBuffer bb = ByteBuffer.allocate(8);
-		bb.order(ByteOrder.BIG_ENDIAN);
-		bb.put(longValue);
-		timeStamp = bb.asLongBuffer().get();
 		
-//		
-//		long tmp = 0;
-//		for (int i = 0; i < longValue.length; i++) {
-//			tmp <<= 8;
-//			tmp |=  (longValue[i] & 0xFF);
-//		}
-//		timeStamp = tmp;
+		
+		long tmp = 0;
+		for (int i = 0; i < longValue.length; i++) {
+			tmp <<= 8;
+			tmp |=  (longValue[i] & 0xFF);
+		}
+		timeStamp = tmp;
 	}
 
 	private Message(byte[] data, String sender, byte nextSlot) {
