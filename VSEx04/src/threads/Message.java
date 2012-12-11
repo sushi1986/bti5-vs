@@ -31,18 +31,15 @@ public class Message {
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
 		this(data, sender, nextSlot);
 		
-		ByteBuffer bb = ByteBuffer.allocate(8);
-		bb.order(ByteOrder.BIG_ENDIAN);
-		bb.put(longValue);
-		timeStamp = bb.asLongBuffer().get();
+
 		
-//		
-//		long tmp = 0;
-//		for (int i = 0; i < longValue.length; i++) {
-//			tmp <<= 8;
-//			tmp |=  (longValue[i] & 0xFF);
-//		}
-//		timeStamp = tmp;
+		long tmp = 0;
+		for (int i = 0; i < longValue.length; i++) {
+			tmp <<= 8;
+			tmp |=  (longValue[i] & 0xFF);
+		}
+		timeStamp = tmp;
+		
 	}
 
 	private Message(byte[] data, String sender, byte nextSlot) {
@@ -56,8 +53,6 @@ public class Message {
 
 	public byte[] getBytes() {
 
-		ByteBuffer bb = ByteBuffer.allocate(8);
-		bb.order(ByteOrder.BIG_ENDIAN);
 
 		String glub = String.format("%-10s", sender);
 
@@ -84,13 +79,19 @@ public class Message {
 			data = tmp;
 		}
 		
-		bb.putLong(timeStamp);
+		byte[] ba = new byte[8];
+		for (int i = 0; i < ba.length; i++) {
+			long x = (0xFF00000000000000L >> i * 8);
+			long t = (timeStamp & x);
+			ba[i] = (byte) ( t >> (64-(i+1)*8));//  56);
 
+		}
+		
 		try {
 			dis.writeBytes(glub);
 			dis.write(data);
 			dis.writeByte(nextSlot);
-			dis.write(bb.array());
+			dis.write(ba);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
