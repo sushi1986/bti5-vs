@@ -105,7 +105,7 @@ public class Worker extends Thread {
         Message msg = null;
         boolean synced = false;
         boolean silence = true;
-        long startingTime = Message.generateTimeStamp();
+        long startingTime = TimeHandler.generateTimeStamp();
 
         boolean isFirst = false;
 
@@ -138,7 +138,7 @@ public class Worker extends Thread {
                     future[msg.getNextSlot()] = tmp;
                 }
             }
-            if (silence && ((Message.generateTimeStamp() - startingTime) >= 2000)) {
+            if (silence && ((TimeHandler.generateTimeStamp() - startingTime) >= 2000)) {
                 synced = true;
                 isFirst = true;
             }
@@ -147,7 +147,7 @@ public class Worker extends Thread {
         long beginOfNextSlot = 0;
 
         if (isFirst) {
-            beginOfNextSlot = Message.generateTimeStamp();
+            beginOfNextSlot = TimeHandler.generateTimeStamp();
             System.out.println("[Worker] I'm alone....");
         }
         else {
@@ -165,7 +165,7 @@ public class Worker extends Thread {
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (Message.generateTimeStamp() >= beginOfNextSlot) {
+            if (TimeHandler.generateTimeStamp() >= beginOfNextSlot) {
                 currentSlot = (currentSlot + 1) % NUMBER_OF_SLOTS;
                 if (currentSlot == 0) {
                     current = future;
@@ -181,7 +181,7 @@ public class Worker extends Thread {
                     }
                     if (cnt > 0) {
                         beginOfNextSlot -= (average / cnt);
-                    	Message.adjustTime(-(average / cnt));
+                        TimeHandler.adjustTime(-(average / cnt));
                     }
                 }
                 beginOfNextSlot += 50;
@@ -202,14 +202,14 @@ public class Worker extends Thread {
             if (msg == null) { // no message received, maybe i need to send
                 if (now != null) {
                     if (now.getTeam().startsWith(self)) { // i have to send
-                        if (!sentMessage && Message.generateTimeStamp() >= (beginOfNextSlot - 30)) {
+                        if (!sentMessage && TimeHandler.generateTimeStamp() >= (beginOfNextSlot - 30)) {
                             byte nextSlot = findFreeSlotFromIndexIn(0, future, RANDOM);
                             if (nextSlot == -1) {
                                 sending = false;
                                 System.err.println("[Worker] No free slot available.");
                             }
                             else {
-                                Message tmp = new Message(new byte[] { 0 }, self, nextSlot, Message.generateTimeStamp());
+                                Message tmp = new Message(new byte[] { 0 }, self, nextSlot, TimeHandler.generateTimeStamp());
                                 if (insertMessageIntoSlot(tmp, future)) {
                                     outgoing.add(tmp);
                                     sentMessage = true;
@@ -236,6 +236,7 @@ public class Worker extends Thread {
                             insertMessageIntoSlot(msg, future);
                         }
                         else {
+                        	insertMessageIntoSlot(msg, future);
                             // someone send in the wrong slot
                         }
                     }

@@ -5,10 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
 import java.util.Arrays;
 
-import javax.security.auth.callback.LanguageCallback;
+import work.TimeHandler;
 
 public class Message {
 
@@ -18,21 +17,14 @@ public class Message {
 	private long timeStamp;
 
 	private long ourTimestamp;
-    private static long offset = 0;
-    public static void adjustTime(long offset) {
-		Message.offset += offset;
-	}
-    public static long generateTimeStamp(){
-    	return System.currentTimeMillis() + offset;
-    }
-    
+
 	public Message(byte[] data, String sender, byte nextSlot, long timeStamp) {
 		super();
 		this.data = data;
 		this.sender = sender;
 		this.nextSlot = nextSlot;
 		this.timeStamp = timeStamp;
-		this.ourTimestamp = generateTimeStamp();
+		this.ourTimestamp = TimeHandler.generateTimeStamp();
 	}
 
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
