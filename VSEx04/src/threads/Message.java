@@ -31,7 +31,7 @@ public class Message {
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
 		this(data, sender, nextSlot);
 		
-		ByteBuffer bb = ByteBuffer.allocate(4);
+		ByteBuffer bb = ByteBuffer.allocate(8);
 		bb.order(ByteOrder.BIG_ENDIAN);
 		bb.put(longValue);
 		timeStamp = bb.asLongBuffer().get();
@@ -56,7 +56,7 @@ public class Message {
 
 	public byte[] getBytes() {
 
-		ByteBuffer bb = ByteBuffer.allocate(4);
+		ByteBuffer bb = ByteBuffer.allocate(8);
 		bb.order(ByteOrder.BIG_ENDIAN);
 
 		String glub = String.format("%-10s", sender);
