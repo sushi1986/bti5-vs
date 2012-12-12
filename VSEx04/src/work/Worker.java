@@ -175,7 +175,7 @@ public class Worker extends Thread {
 		long beginOfNextSlot = 0;
 
 		if (isFirst) {
-			beginOfNextSlot = TimeHandler.generateTimeStamp();
+			beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000)*1000+50;
 			System.out.println("[Worker] I'm alone....");
 		} else {
 			beginOfNextSlot = msg.getOurTimestamp() + 25;
@@ -206,8 +206,8 @@ public class Worker extends Thread {
 						}
 					}
 					if (cnt > 0) {
-						beginOfNextSlot -= (average / cnt);
-						TimeHandler.adjustTime(-(average / cnt));
+//						beginOfNextSlot -= (average / cnt);
+//						TimeHandler.adjustTime(-(average / cnt));
 					}
 				}
 				beginOfNextSlot += 50;
@@ -246,6 +246,11 @@ public class Worker extends Thread {
 										System.out
 												.println("Fehler mit der DatenQuelle");
 									} else {
+//										System.out.print("Array aus Quelle: ");
+//										for (int i = 0; i < input.length; i++) {
+//											System.out.print("["+input[i]+"]");
+//										}
+//										System.out.println();
 										tmp = new Message(input, nextSlot,
 												TimeHandler.generateTimeStamp());
 									}
