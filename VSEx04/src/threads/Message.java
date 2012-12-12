@@ -30,8 +30,6 @@ public class Message {
 	private Message(byte[] data, String sender, byte nextSlot, byte[] longValue) {
 		this(data, sender, nextSlot);
 		
-		
-		
 		long tmp = 0;
 		for (int i = 0; i < longValue.length; i++) {
 			tmp <<= 8;
