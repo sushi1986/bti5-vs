@@ -37,6 +37,11 @@ public class Message {
 		}
 		timeStamp = tmp;
 	}
+	
+	public Message(byte[] data, byte nextSlot, long longValue) {
+		this(Arrays.copyOfRange(data, 10, 24), new String(Arrays.copyOfRange(
+				data, 0, 10)), nextSlot, longValue);
+	}
 
 	private Message(byte[] data, String sender, byte nextSlot) {
 		this(data, sender, nextSlot, 0);

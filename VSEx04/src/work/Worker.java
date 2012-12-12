@@ -1,5 +1,8 @@
 package work;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -221,16 +224,29 @@ public class Worker extends Thread {
 								System.err
 										.println("[Worker] No free slot available.");
 							} else {
-								Message tmp = new Message(new byte[] { 0 },
-										self, nextSlot,
-										TimeHandler.generateTimeStamp());
-								if (insertMessageIntoSlot(tmp, future)) {
-									outgoing.add(tmp);
-									sentMessage = true;
-								} else {
-									sending = false;
-									System.out
-											.println("[Worker] Liar. That slot is not free ...");
+								Message tmp = null;
+								BufferedInputStream bis = new BufferedInputStream(System.in);
+								byte[] input = new byte[24];
+								
+								try {
+									if(bis.read(input)!=24){
+										System.out.println("Fehler mit der DatenQuelle");
+									} else {
+										tmp = new Message(input,nextSlot,TimeHandler.generateTimeStamp());
+									}
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								if(tmp!=null){
+									if (insertMessageIntoSlot(tmp, future)) {
+										outgoing.add(tmp);
+										sentMessage = true;
+									} else {
+										sending = false;
+										System.out
+												.println("[Worker] Liar. That slot is not free ...");
+									}
 								}
 							}
 						}
