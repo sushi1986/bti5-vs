@@ -54,7 +54,10 @@ public class Message {
 		ByteBuffer bb = ByteBuffer.allocate(8);
 		bb.order(ByteOrder.BIG_ENDIAN);
 
-		String glub = String.format("%-10s", sender);
+		char[] glub = String.format("%-10s", sender).toCharArray();
+		if(sender.length() < 10) {
+			glub[sender.length()] = '\0';
+		}
 
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(33);
@@ -88,7 +91,7 @@ public class Message {
 		}
 		
 		try {
-			dis.writeBytes(glub);
+			dis.writeBytes(new String(glub));
 			dis.write(data);
 			dis.writeByte(nextSlot);
 			dis.write(ba);

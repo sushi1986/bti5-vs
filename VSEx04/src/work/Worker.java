@@ -201,7 +201,7 @@ public class Worker extends Thread {
             TimeSlot now = current[currentSlot];
             if (msg == null) { // no message received, maybe i need to send
                 if (now != null) {
-                    if (now.getTeam().startsWith(self)) { // i have to send
+                    if (now.getTeam().equals(self)) { // i have to send
                         if (!sentMessage && TimeHandler.generateTimeStamp() >= (beginOfNextSlot - 30)) {
                             byte nextSlot = findFreeSlotFromIndexIn(0, future, RANDOM);
                             if (nextSlot == -1) {
@@ -224,7 +224,7 @@ public class Worker extends Thread {
                 }
             }
             else { // received message
-                if (msg.getSender().startsWith(self)) { // received own message
+                if (msg.getSender().equals(self)) { // received own message
                     // who cares?
                 }
                 else { // received message from other team
@@ -232,7 +232,7 @@ public class Worker extends Thread {
                         insertMessageIntoSlot(msg, future);
                     }
                     else { // expected someone to send something
-                        if (msg.getSender().startsWith(now.getTeam())) {
+                        if (msg.getSender().equals(now.getTeam())) {
                             insertMessageIntoSlot(msg, future);
                         }
                         else {
