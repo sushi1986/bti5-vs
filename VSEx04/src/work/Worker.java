@@ -1,7 +1,6 @@
 package work;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,33 +43,50 @@ public class Worker extends Thread {
 		diffrences = new long[NUMBER_OF_SLOTS];
 	}
 
-	private boolean insertMessageIntoSlot(Message msg, TimeSlot[] into) {
-		if (into[msg.getNextSlot()] != null) {
-			System.out
-					.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d)\n",
-							currentSlot, into[msg.getNextSlot()].getTeam(),
-							into[msg.getNextSlot()].getSlot(), msg.getSender(),
-							msg.getNextSlot());
-			return false;
-		} else {
-			// System.out.println("[WORKER][main] Slot is '" + currentSlot +
-			// "' > " + msg.toString());
+	private boolean insertMessageIntoFuture(Message msg) {
+		byte nextSlot = msg.getNextSlot();
+		if (future[nextSlot] == null) {
 			System.out.printf("[WORKER][main][%2d] %s\n", currentSlot,
 					msg.toString());
 			TimeSlot tmp = new TimeSlot();
 			tmp.setTeam(msg.getSender());
-			into[msg.getNextSlot()] = tmp;
+			future[nextSlot] = tmp;
 			return true;
+		} else {
+			if (current[currentSlot] == null) {
+				System.out
+						.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d)\n",
+								currentSlot, future[nextSlot].getTeam(),
+								future[nextSlot].getSlot(), msg.getSender(),
+								msg.getNextSlot());
+				return false;
+			} else {
+				if (current[currentSlot].getTeam().equals(msg.getSender())) {
+					System.out.printf(
+							"[WORKER][main][%2d][Overwriting team: %s] %s\n",
+							currentSlot, future[nextSlot].getTeam(),
+							msg.toString());
+					TimeSlot tmp = new TimeSlot();
+					tmp.setTeam(msg.getSender());
+					future[nextSlot] = tmp;
+					return true;
+				} else {
+					System.out
+							.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d)\n",
+									currentSlot, future[nextSlot].getTeam(),
+									future[nextSlot].getSlot(),
+									msg.getSender(), msg.getNextSlot());
+					return false;
+				}
+			}
 		}
 	}
 
-	private void insertTimeSlot(TimeSlot[] into, byte slot, long eta,
-			String team) {
+	private void insertTimeSlotIntoCurrent(byte slot, String team) {
 		TimeSlot tmp = new TimeSlot();
-		tmp.setEta(eta);
 		tmp.setSlot(slot);
 		tmp.setTeam(team);
-		into[slot] = tmp;
+		current[slot] = tmp;
 	}
 
 	private byte findFreeSlotFromIndexIn(int start, TimeSlot[] slots,
@@ -201,11 +217,7 @@ public class Worker extends Thread {
 					byte nextSlot = findFreeSlotFromIndexIn(currentSlot + 1,
 							current, RANDOM);
 					if (nextSlot >= 0) {
-						// insertTimeSlot(future, nextSlot, (nextSlot *
-						// SLOT_LENGTH + (beginOfNextSlot - 50)), self);
-						insertTimeSlot(current, nextSlot, (nextSlot
-								* SLOT_LENGTH + (beginOfNextSlot - 50)), self);
-
+						insertTimeSlotIntoCurrent(nextSlot, self);
 						sending = true;
 					}
 				}
@@ -225,21 +237,25 @@ public class Worker extends Thread {
 										.println("[Worker] No free slot available.");
 							} else {
 								Message tmp = null;
-								BufferedInputStream bis = new BufferedInputStream(System.in);
+								BufferedInputStream bis = new BufferedInputStream(
+										System.in);
 								byte[] input = new byte[24];
-								
+
 								try {
-									if(bis.read(input)!=24){
-										System.out.println("Fehler mit der DatenQuelle");
+									if (bis.read(input) != 24) {
+										System.out
+												.println("Fehler mit der DatenQuelle");
 									} else {
-										tmp = new Message(input,nextSlot,TimeHandler.generateTimeStamp());
+										tmp = new Message(input, nextSlot,
+												TimeHandler.generateTimeStamp());
 									}
 								} catch (IOException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
-								if(tmp!=null){
-									if (insertMessageIntoSlot(tmp, future)) {
+								if (tmp != null) {
+
+									if (insertMessageIntoFuture(tmp)) {
 										outgoing.add(tmp);
 										sentMessage = true;
 									} else {
@@ -257,12 +273,12 @@ public class Worker extends Thread {
 					// who cares?
 				} else { // received message from other team
 					if (now == null) { // they are sending the first time
-						insertMessageIntoSlot(msg, future);
+						insertMessageIntoFuture(msg);
 					} else { // expected someone to send something
 						if (msg.getSender().equals(now.getTeam())) {
-							insertMessageIntoSlot(msg, future);
+							insertMessageIntoFuture(msg);
 						} else {
-							insertMessageIntoSlot(msg, future);
+							insertMessageIntoFuture(msg);
 							// someone send in the wrong slot
 						}
 					}
