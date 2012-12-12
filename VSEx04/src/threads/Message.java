@@ -55,7 +55,7 @@ public class Message {
 		bb.order(ByteOrder.BIG_ENDIAN);
 
 		byte[] glub = String.format("%-10s", sender).getBytes();
-		for(int i = 0; i < glub.length; i++) { 
+		for(int i = sender.length(); i < glub.length; i++) { 
 			glub[i] = 0;
 		}
 
