@@ -205,6 +205,7 @@ public class Worker extends Thread {
 					}
 					System.out.printf("[Worker][main][%2d] Collision!\n",
 							currentSlot);
+					sending = false;
 				} else if (receivedMessages.size() == 1) {
 					insertMessageIntoFuture(receivedMessages.get(0));
 				}
