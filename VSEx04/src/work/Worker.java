@@ -173,12 +173,16 @@ public class Worker extends Thread {
 		}
 
 		long beginOfNextSlot = 0;
-
+		beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1000;
+		try {
+			Thread.sleep(beginOfNextSlot-TimeHandler.generateTimeStamp());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (isFirst) {
-			beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 50;
 			System.out.println("[Worker] I'm alone....");
 		} else {
-			beginOfNextSlot = msg.getOurTimestamp() + 25;
 			System.out.println("[Worker] Worker synchronized, now ...");
 		}
 
