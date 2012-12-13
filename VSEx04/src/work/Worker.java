@@ -173,11 +173,10 @@ public class Worker extends Thread {
 		}
 
 		long beginOfNextSlot = 0;
-		beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1000;
+		beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1050;
 		try {
 			Thread.sleep(beginOfNextSlot-TimeHandler.generateTimeStamp());
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (isFirst) {
