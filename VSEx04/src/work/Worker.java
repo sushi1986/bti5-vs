@@ -15,7 +15,7 @@ public class Worker extends Thread {
 	private static final long FRAME_LENGTH = 1000;
 	private static final long SLOT_LENGTH = 50;
 	private static final int NUMBER_OF_SLOTS = (int) (FRAME_LENGTH / SLOT_LENGTH);
-	private static final boolean RANDOM = false;
+	private static final boolean RANDOM = true;
 
 	private String self;
 
@@ -194,7 +194,7 @@ public class Worker extends Thread {
 			}
 			if (TimeHandler.generateTimeStamp() >= beginOfNextSlot) {
 				if (receivedMessages.size() > 1) {
-					for(Message m : receivedMessages) {
+					for (Message m : receivedMessages) {
 						if (m.getSender().equals(self)) {
 							sending = false;
 						}
@@ -209,23 +209,23 @@ public class Worker extends Thread {
 				if (currentSlot == 0) {
 					current = future;
 					future = new TimeSlot[NUMBER_OF_SLOTS];
-					// int cnt = 0;
-					// int average = 0;
-					// for (int i = 0; i < diffrences.length; i++) {
-					// if (diffrences[i] != 0) {
-					// average += diffrences[i];
-					// cnt++;
-					// diffrences[i] = 0;
-					// }
-					// }
-					// if (cnt > 0) {
-					// beginOfNextSlot -= (average / cnt);
-					// TimeHandler.adjustTime(-(average / cnt));
-					// }
+					int cnt = 0;
+					int average = 0;
+					for (int i = 0; i < diffrences.length; i++) {
+						if (diffrences[i] != 0) {
+							average += diffrences[i];
+							cnt++;
+							diffrences[i] = 0;
+						}
+					}
+					if (cnt > 0) {
+//						beginOfNextSlot -= (average / cnt);
+						TimeHandler.adjustTime(-(average / cnt));
+					}
+					sentMessage = false;
 				}
 				beginOfNextSlot += 50;
 				// receivedMessage = false;
-				sentMessage = false;
 				if (!sending) {
 					byte nextSlot = findFreeSlotFromIndexIn(currentSlot + 1,
 							current, RANDOM);
