@@ -190,7 +190,7 @@ public class Worker extends Thread {
 				if (currentSlot == 0) {
 					current = future;
 					future = new TimeSlot[NUMBER_OF_SLOTS];
-					int cnt = 0;
+					int cnt = 1;
 					int average = 0;
 					for (int i = 0; i < diffrences.length; i++) {
 						if (diffrences[i] != 0) {
@@ -199,7 +199,7 @@ public class Worker extends Thread {
 							diffrences[i] = 0;
 						}
 					}
-					if (cnt > 0) {
+					if (cnt > 1) {
 						TimeHandler.adjustTime(-(average / cnt));
 					}
 					if (!sending) {
