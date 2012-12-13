@@ -55,7 +55,7 @@ public class Worker extends Thread {
 		} else {
 			if (current[currentSlot] == null) {
 				System.out
-						.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d)\n",
+						.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d) [current slot null]\n",
 								currentSlot, future[nextSlot].getTeam(),
 								future[nextSlot].getSlot(), msg.getSender(),
 								msg.getNextSlot());
@@ -72,7 +72,7 @@ public class Worker extends Thread {
 					return true;
 				} else {
 					System.out
-							.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d)\n",
+							.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d) [rightful owner already saved this slot]\n",
 									currentSlot, future[nextSlot].getTeam(),
 									future[nextSlot].getSlot(),
 									msg.getSender(), msg.getNextSlot());
