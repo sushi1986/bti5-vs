@@ -172,8 +172,7 @@ public class Worker extends Thread {
 			}
 		}
 
-		long beginOfNextSlot = 0;
-		beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1000;
+		long beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1000;
 		try {
 			Thread.sleep(beginOfNextSlot-TimeHandler.generateTimeStamp());
 		} catch (InterruptedException e) {
@@ -226,16 +225,16 @@ public class Worker extends Thread {
 						TimeHandler.adjustTime(-(average / cnt));
 					}
 					sentMessage = false;
-				}
-				beginOfNextSlot += 50;
-				if (!sending) {
-					byte nextSlot = findFreeSlotFromIndexIn(currentSlot + 1,
-							current, RANDOM);
-					if (nextSlot >= 0) {
-						insertTimeSlotIntoCurrent(nextSlot, self);
-						sending = true;
+					if (!sending) {
+						byte nextSlot = findFreeSlotFromIndexIn(currentSlot,
+								current, RANDOM);
+						if (nextSlot >= 0) {
+							insertTimeSlotIntoCurrent(nextSlot, self);
+							sending = true;
+						}
 					}
 				}
+				beginOfNextSlot += 50;
 			}
 
 			TimeSlot now = current[currentSlot];
