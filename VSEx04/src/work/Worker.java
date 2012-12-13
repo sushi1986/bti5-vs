@@ -292,7 +292,7 @@ public class Worker extends Thread {
 				}
 			} else { // received message
 				receivedMessages.add(msg);
-				if (msg.getSender().equals(self)) {
+				if (!msg.getSender().equals(self)) {
 					diffrences[currentSlot] = msg.getOurTimestamp()
 							- msg.getTimeStamp();
 				}
