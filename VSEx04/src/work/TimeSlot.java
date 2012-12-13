@@ -1,5 +1,10 @@
 package work;
 
+/**
+ * VS Lab4
+ * @author Phillip Gesien, Raphael Hiesgen
+ */
+
 public class TimeSlot {
     private String team;
     private int slot;

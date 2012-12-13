@@ -7,6 +7,11 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 
+/**
+ * VS Lab4
+ * @author Phillip Gesien, Raphael Hiesgen
+ */
+
 public class SendThread extends Thread {
     private BlockingQueue<Message> msgsToSend;
     private MulticastSocket mSck;
@@ -16,7 +21,6 @@ public class SendThread extends Thread {
 
     public SendThread(BlockingQueue<Message> sndMsgs, String group, int port) {
         this.msgsToSend = sndMsgs;
-
         try {
             mSck = new MulticastSocket();
         }
@@ -38,7 +42,6 @@ public class SendThread extends Thread {
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
             if (m == null) {
                 System.out.println("[ST] Error take = null");
             }
@@ -47,10 +50,6 @@ public class SendThread extends Thread {
                 DatagramPacket dp = null;
                 try {
                     dp = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(group), port);
-
-//                    System.out.println("[ST] Sending (" + dp.getAddress() + ":" + dp.getPort()+") " + m.toString());
-                    
-
                     mSck.send(dp);
                 }
                 catch (UnknownHostException e) {
@@ -60,12 +59,10 @@ public class SendThread extends Thread {
                     e.printStackTrace();
                 }
             }
-
         }
     }
 
     public BlockingQueue<Message> getMsgsToSend() {
         return msgsToSend;
     }
-
 }
