@@ -173,7 +173,7 @@ public class Worker extends Thread {
 		}
 
 		long beginOfNextSlot = 0;
-		beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1050;
+		beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1000;
 		try {
 			Thread.sleep(beginOfNextSlot-TimeHandler.generateTimeStamp());
 		} catch (InterruptedException e) {
@@ -184,6 +184,7 @@ public class Worker extends Thread {
 		} else {
 			System.out.println("[Worker] Worker synchronized, now ...");
 		}
+		beginOfNextSlot+=50;
 
 		boolean sending = false;
 		boolean sentMessage = false;
