@@ -184,11 +184,11 @@ public class Worker extends Thread {
 		} else {
 			System.out.println("[Worker] Worker synchronized, now ...");
 		}
+		currentSlot = 0;
 		beginOfNextSlot+=50;
 
 		boolean sending = false;
 		boolean sentMessage = false;
-		// boolean receivedMessage = false;
 		List<Message> receivedMessages = new ArrayList<Message>();
 		while (!isInterrupted()) {
 			try {
@@ -205,7 +205,6 @@ public class Worker extends Thread {
 					}
 					System.out.printf("[Worker][main][%2d] Collision!\n",
 							currentSlot);
-					sending = false;
 				} else if (receivedMessages.size() == 1) {
 					insertMessageIntoFuture(receivedMessages.get(0));
 				}
@@ -224,13 +223,11 @@ public class Worker extends Thread {
 						}
 					}
 					if (cnt > 0) {
-						// beginOfNextSlot -= (average / cnt);
 						TimeHandler.adjustTime(-(average / cnt));
 					}
 					sentMessage = false;
 				}
 				beginOfNextSlot += 50;
-				// receivedMessage = false;
 				if (!sending) {
 					byte nextSlot = findFreeSlotFromIndexIn(currentSlot + 1,
 							current, RANDOM);
@@ -273,20 +270,9 @@ public class Worker extends Thread {
 								if (tmp != null) {
 									outgoing.add(tmp);
 									sentMessage = true;
-									// receivedMessages.add(tmp);
 								} else {
 									sending = false;
 								}
-								// if (tmp != null) {
-								// if (insertMessageIntoFuture(tmp)) {
-								// outgoing.add(tmp);
-								// sentMessage = true;
-								// } else {
-								// sending = false;
-								// System.out
-								// .println("[Worker] Liar. That slot is not free ...");
-								// }
-								// }
 							}
 						}
 					}
@@ -297,22 +283,6 @@ public class Worker extends Thread {
 					diffrences[currentSlot] = msg.getOurTimestamp()
 							- msg.getTimeStamp();
 				}
-				// if (msg.getSender().equals(self)) { // received own message
-				// // who cares?
-				// } else { // received message from other team
-				// if (now == null) { // they are sending the first time
-				// insertMessageIntoFuture(msg);
-				// } else { // expected someone to send something
-				// if (msg.getSender().equals(now.getTeam())) {
-				// insertMessageIntoFuture(msg);
-				// } else {
-				// insertMessageIntoFuture(msg);
-				// // someone send in the wrong slot
-				// }
-				// }
-				// diffrences[currentSlot] = msg.getOurTimestamp()
-				// - msg.getTimeStamp();
-				// }
 			}
 		}
 		System.out.println("[Worker] Bye!");
