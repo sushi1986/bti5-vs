@@ -211,6 +211,8 @@ public class Worker extends Thread {
                         if (nextSlot >= 0) {
                             insertTimeSlotIntoCurrent(nextSlot, self);
                             sending = true;
+                        } else {
+                        	System.out.println("COULDNT FIND A FREE SLOT!!!!!!!");
                         }
                     }
                 }

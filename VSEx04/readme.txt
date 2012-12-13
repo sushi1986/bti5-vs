@@ -6,3 +6,10 @@ zum Starten des Programms
 oder
 
 java -cp<PATH TO DATASOURCE> datasource.DataSource <TEAM NR> <STATION-NR> 50 | java -cp <PATH TO BIN FOLDER> Main <GROUP> <PORT>
+
+
+
+Falls keine Route dann:
+
+ip route add 224.0.0.0/4 dev eth0
+
