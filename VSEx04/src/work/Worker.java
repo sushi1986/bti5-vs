@@ -219,7 +219,7 @@ public class Worker extends Thread {
 						}
 					}
 					if (cnt > 0) {
-//						beginOfNextSlot -= (average / cnt);
+						// beginOfNextSlot -= (average / cnt);
 						TimeHandler.adjustTime(-(average / cnt));
 					}
 					sentMessage = false;
@@ -288,8 +288,10 @@ public class Worker extends Thread {
 				}
 			} else { // received message
 				receivedMessages.add(msg);
-				diffrences[currentSlot] = msg.getOurTimestamp()
-						- msg.getTimeStamp();
+				if (msg.getSender().equals(self)) {
+					diffrences[currentSlot] = msg.getOurTimestamp()
+							- msg.getTimeStamp();
+				}
 				// if (msg.getSender().equals(self)) { // received own message
 				// // who cares?
 				// } else { // received message from other team
