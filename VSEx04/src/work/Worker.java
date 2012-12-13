@@ -175,7 +175,7 @@ public class Worker extends Thread {
 		long beginOfNextSlot = 0;
 
 		if (isFirst) {
-			beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000)*1000+50;
+			beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 50;
 			System.out.println("[Worker] I'm alone....");
 		} else {
 			beginOfNextSlot = msg.getOurTimestamp() + 25;
@@ -185,6 +185,7 @@ public class Worker extends Thread {
 		boolean sending = false;
 		boolean sentMessage = false;
 		// boolean receivedMessage = false;
+		List<Message> receivedMessages = new ArrayList<Message>();
 		while (!isInterrupted()) {
 			try {
 				msg = incoming.poll(10, TimeUnit.MILLISECONDS);
@@ -192,23 +193,35 @@ public class Worker extends Thread {
 				e.printStackTrace();
 			}
 			if (TimeHandler.generateTimeStamp() >= beginOfNextSlot) {
+				if (receivedMessages.size() > 1) {
+					for(Message m : receivedMessages) {
+						if (m.getSender().equals(self)) {
+							sending = false;
+						}
+					}
+					System.out.printf("[Worker][main][%2d] Collision!\n",
+							currentSlot);
+				} else if (receivedMessages.size() == 1) {
+					insertMessageIntoFuture(receivedMessages.get(0));
+				}
+				receivedMessages.clear();
 				currentSlot = (currentSlot + 1) % NUMBER_OF_SLOTS;
 				if (currentSlot == 0) {
 					current = future;
 					future = new TimeSlot[NUMBER_OF_SLOTS];
-					int cnt = 0;
-					int average = 0;
-					for (int i = 0; i < diffrences.length; i++) {
-						if (diffrences[i] != 0) {
-							average += diffrences[i];
-							cnt++;
-							diffrences[i] = 0;
-						}
-					}
-					if (cnt > 0) {
-//						beginOfNextSlot -= (average / cnt);
-//						TimeHandler.adjustTime(-(average / cnt));
-					}
+					// int cnt = 0;
+					// int average = 0;
+					// for (int i = 0; i < diffrences.length; i++) {
+					// if (diffrences[i] != 0) {
+					// average += diffrences[i];
+					// cnt++;
+					// diffrences[i] = 0;
+					// }
+					// }
+					// if (cnt > 0) {
+					// beginOfNextSlot -= (average / cnt);
+					// TimeHandler.adjustTime(-(average / cnt));
+					// }
 				}
 				beginOfNextSlot += 50;
 				// receivedMessage = false;
@@ -246,50 +259,53 @@ public class Worker extends Thread {
 										System.out
 												.println("Fehler mit der DatenQuelle");
 									} else {
-//										System.out.print("Array aus Quelle: ");
-//										for (int i = 0; i < input.length; i++) {
-//											System.out.print("["+input[i]+"]");
-//										}
-//										System.out.println();
 										tmp = new Message(input, nextSlot,
 												TimeHandler.generateTimeStamp());
 									}
 								} catch (IOException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 								if (tmp != null) {
-
-									if (insertMessageIntoFuture(tmp)) {
-										outgoing.add(tmp);
-										sentMessage = true;
-									} else {
-										sending = false;
-										System.out
-												.println("[Worker] Liar. That slot is not free ...");
-									}
+									outgoing.add(tmp);
+									sentMessage = true;
+									// receivedMessages.add(tmp);
+								} else {
+									sending = false;
 								}
+								// if (tmp != null) {
+								// if (insertMessageIntoFuture(tmp)) {
+								// outgoing.add(tmp);
+								// sentMessage = true;
+								// } else {
+								// sending = false;
+								// System.out
+								// .println("[Worker] Liar. That slot is not free ...");
+								// }
+								// }
 							}
 						}
 					}
 				}
 			} else { // received message
-				if (msg.getSender().equals(self)) { // received own message
-					// who cares?
-				} else { // received message from other team
-					if (now == null) { // they are sending the first time
-						insertMessageIntoFuture(msg);
-					} else { // expected someone to send something
-						if (msg.getSender().equals(now.getTeam())) {
-							insertMessageIntoFuture(msg);
-						} else {
-							insertMessageIntoFuture(msg);
-							// someone send in the wrong slot
-						}
-					}
-					diffrences[currentSlot] = msg.getOurTimestamp()
-							- msg.getTimeStamp();
-				}
+				receivedMessages.add(msg);
+				diffrences[currentSlot] = msg.getOurTimestamp()
+						- msg.getTimeStamp();
+				// if (msg.getSender().equals(self)) { // received own message
+				// // who cares?
+				// } else { // received message from other team
+				// if (now == null) { // they are sending the first time
+				// insertMessageIntoFuture(msg);
+				// } else { // expected someone to send something
+				// if (msg.getSender().equals(now.getTeam())) {
+				// insertMessageIntoFuture(msg);
+				// } else {
+				// insertMessageIntoFuture(msg);
+				// // someone send in the wrong slot
+				// }
+				// }
+				// diffrences[currentSlot] = msg.getOurTimestamp()
+				// - msg.getTimeStamp();
+				// }
 			}
 		}
 		System.out.println("[Worker] Bye!");

@@ -130,4 +130,41 @@ public class Message {
 				+ ", nextSlot=" + nextSlot + ", timeStamp=" + timeStamp
 				+ ", ourTimestamp=" + ourTimestamp + "]";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(data);
+		result = prime * result + nextSlot;
+		result = prime * result + (int) (ourTimestamp ^ (ourTimestamp >>> 32));
+		result = prime * result + ((sender == null) ? 0 : sender.hashCode());
+		result = prime * result + (int) (timeStamp ^ (timeStamp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Message other = (Message) obj;
+		if (!Arrays.equals(data, other.data))
+			return false;
+		if (nextSlot != other.nextSlot)
+			return false;
+		if (ourTimestamp != other.ourTimestamp)
+			return false;
+		if (sender == null) {
+			if (other.sender != null)
+				return false;
+		} else if (!sender.equals(other.sender))
+			return false;
+		if (timeStamp != other.timeStamp)
+			return false;
+		return true;
+	}
 }
