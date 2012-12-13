@@ -53,32 +53,10 @@ public class Worker extends Thread {
 			future[nextSlot] = tmp;
 			return true;
 		} else {
-			if (current[currentSlot] == null) {
-				System.out
-						.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d) [current slot null]\n",
-								currentSlot, future[nextSlot].getTeam(),
-								future[nextSlot].getSlot(), msg.getSender(),
-								msg.getNextSlot());
-				return false;
-			} else {
-				if (current[currentSlot].getTeam().equals(msg.getSender())) {
-					System.out.printf(
-							"[WORKER][main][%2d][Overwriting team: %s] %s\n",
-							currentSlot, future[nextSlot].getTeam(),
-							msg.toString());
-					TimeSlot tmp = new TimeSlot();
-					tmp.setTeam(msg.getSender());
-					future[nextSlot] = tmp;
-					return true;
-				} else {
-					System.out
-							.printf("[WORKER][main][%2d] Slot not available (t%s -> s%d), conflic with (t%s - s%d) [rightful owner already saved this slot]\n",
-									currentSlot, future[nextSlot].getTeam(),
-									future[nextSlot].getSlot(),
-									msg.getSender(), msg.getNextSlot());
-					return false;
-				}
-			}
+			System.out.printf(
+					"[WORKER][main][%2d] Slot already in use! (%s)\n",
+					currentSlot, msg.toString());
+			return false;
 		}
 	}
 
@@ -118,7 +96,6 @@ public class Worker extends Thread {
 		for (int i = 0; i < current.length; i++) {
 			if (current[i] != null
 					&& current[i].getTeam().equals(msg.getSender())) {
-				// gefunden
 				old = current[i];
 				break;
 			}
@@ -174,7 +151,7 @@ public class Worker extends Thread {
 
 		long beginOfNextSlot = (TimeHandler.generateTimeStamp() / 1000) * 1000 + 1000;
 		try {
-			Thread.sleep(beginOfNextSlot-TimeHandler.generateTimeStamp());
+			Thread.sleep(beginOfNextSlot - TimeHandler.generateTimeStamp());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -184,7 +161,7 @@ public class Worker extends Thread {
 			System.out.println("[Worker] Worker synchronized, now ...");
 		}
 		currentSlot = 0;
-		beginOfNextSlot+=50;
+		beginOfNextSlot += 50;
 
 		boolean sending = false;
 		boolean sentMessage = false;
@@ -197,15 +174,16 @@ public class Worker extends Thread {
 			}
 			if (TimeHandler.generateTimeStamp() >= beginOfNextSlot) {
 				if (receivedMessages.size() > 1) {
-					for (Message m : receivedMessages) {
-						if (m.getSender().equals(self)) {
-							sending = false;
-						}
+					if (sentMessage) {
+						sending = false;
 					}
 					System.out.printf("[Worker][main][%2d] Collision!\n",
 							currentSlot);
 				} else if (receivedMessages.size() == 1) {
-					insertMessageIntoFuture(receivedMessages.get(0));
+					if (!insertMessageIntoFuture(receivedMessages.get(0))
+							&& receivedMessages.get(0).getSender().equals(self)) {
+						sending = false;
+					}
 				}
 				receivedMessages.clear();
 				currentSlot = (currentSlot + 1) % NUMBER_OF_SLOTS;
@@ -224,7 +202,6 @@ public class Worker extends Thread {
 					if (cnt > 0) {
 						TimeHandler.adjustTime(-(average / cnt));
 					}
-					sentMessage = false;
 					if (!sending) {
 						byte nextSlot = findFreeSlotFromIndexIn(currentSlot,
 								current, RANDOM);
@@ -235,13 +212,15 @@ public class Worker extends Thread {
 					}
 				}
 				beginOfNextSlot += 50;
+				sentMessage = false;
 			}
 
 			TimeSlot now = current[currentSlot];
 			if (msg == null) { // no message received, maybe i need to send
 				if (now != null) {
 					if (now.getTeam().equals(self)) { // i have to send
-						if (!sentMessage
+						if (sending
+								&& !sentMessage
 								&& TimeHandler.generateTimeStamp() >= (beginOfNextSlot - 30)) {
 							byte nextSlot = findFreeSlotFromIndexIn(0, future,
 									RANDOM);
