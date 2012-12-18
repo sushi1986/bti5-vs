@@ -240,7 +240,7 @@ public class Worker extends Thread {
                                         System.out.println("Fehler mit der DatenQuelle");
                                     }
                                     else {
-                                        tmp = new Message(input, nextSlot, TimeHandler.generateTimeStamp());
+                                        tmp = new Message(input, nextSlot, System.currentTimeMillis());
                                     }
                                 }
                                 catch (IOException e) {
